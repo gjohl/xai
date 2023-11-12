@@ -26,3 +26,9 @@ pip install pip-tools
 pip-compile requirements.in -- upgrade
 pip-compile requirements-dev.in -- upgrade
 ```
+
+### Style and Testing
+Testing is done using `pytest`.
+
+Dosctrings conform to the [numpy docstring style guide](https://numpydoc.readthedocs.io/en/latest/format.html) 
+and `flake8` is used to lint.
