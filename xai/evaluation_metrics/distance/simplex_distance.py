@@ -34,6 +34,7 @@ class SimplexDistance(BaseDistance):
 
     def __init__(self, model, source_data, target_data, simplex=None):
         """
+        Calculate the model-specific distribution distance between source data and target data using the Simplex residuals.
 
         Parameters
         ----------
@@ -47,7 +48,6 @@ class SimplexDistance(BaseDistance):
             A pre-trained simplex explainer can be passed.
             Default is None, which will train a new simplex model.
         """
-
         super().__init__(model, source_data, target_data)
         self.simplex = None
         self.source_latents = None
