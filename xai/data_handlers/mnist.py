@@ -31,6 +31,7 @@ def load_mnist(
         Whether to reshuffle the data at every epoch.
     data_dir: path-like, optional
         The directory to download files to.
+        This defaults to the `data` subdirectory of the xai project.
 
     Returns
     -------
