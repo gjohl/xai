@@ -2,7 +2,7 @@ import torch
 from torch.utils.data import DataLoader
 import torchvision
 
-from xai.data_handlers.constants import DATA_DIR
+from xai.constants import DATA_DIR
 
 
 DEFAULT_MNIST_NORMALIZATION = (0.1307,), (0.3081,)
