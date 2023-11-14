@@ -17,6 +17,7 @@ class BaseDistance(abc.ABC):
         target_data
             Data from the target domain, e.g. the test data
         """
+        # TODO GJ: Do we need to pass the model? Or are the model generated latents enough?
         self.model = model
         self.source_data = source_data
         self.target_data = target_data
