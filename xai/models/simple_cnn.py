@@ -2,10 +2,10 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-from simplexai.models.base import BlackBox
+from xai.models.base_model import BaseModel
 
 
-class CNNClassifier(BlackBox):
+class CNNClassifier(BaseModel):
     def __init__(self) -> None:
         """CNN binary classifier model"""
         super().__init__()
@@ -14,6 +14,9 @@ class CNNClassifier(BlackBox):
         self.conv2_drop = nn.Dropout2d()
         self.fc1 = nn.Linear(320, 50)
         self.fc2 = nn.Linear(50, 10)
+
+    def model_category(self):
+        return "SimpleCNN"
 
     def latent_representation(self, x: torch.Tensor) -> torch.Tensor:
         """
