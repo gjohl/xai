@@ -24,8 +24,8 @@ Compile requirements
 ```shell
 pip install pip-tools
 
-pip-compile requirements.in -- upgrade
-pip-compile requirements-dev.in -- upgrade
+pip-compile requirements.in --upgrade
+pip-compile requirements-dev.in --upgrade
 ```
 
 ### Style and Testing
