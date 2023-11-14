@@ -40,7 +40,7 @@ def load_mnist(
 
     See Also
     --------
-    Adapted from https://github.com/vanderschaarlab/Simplex/blob/0af504927122d59dfc1378b73d0292244213e982/src/simplexai/experiments/mnist.py#L43
+    Adapted from https://github.com/vanderschaarlab/Simplex/blob/0af504927122d59dfc1378b73d0292244213e982/src/simplexai/experiments/mnist.py#L43  # noqa E501
     This is mostly unchanged apart from adding a `data_dir` variable.
     """
     dataset = torchvision.datasets.MNIST(
