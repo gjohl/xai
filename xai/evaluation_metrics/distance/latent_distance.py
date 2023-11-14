@@ -1,18 +1,21 @@
+import numpy as np
 import torch
 
 from xai.evaluation_metrics.distance.base import BaseDistance
 
 
-class LatentDistance(BaseDistance):
+class LatentPointwiseDistance(BaseDistance):
     """Calculate the model-specific distribution distance between source data and target data in the latent space."""
     def distance(self):
-        """float: L2 distance in the latent space."""
-        # TODO GJ
-        # target_latents_approx = self.simplex.latent_approx()
-        # residual = torch.sqrt(torch.sum((self.target_latents - target_latents_approx) ** 2))
-        # return float(residual)
+        """float: Average of pointwise L2 distances in the latent space."""
+        # TODO GJ: Implement as a nested loop for now, then vectorise later after adding a test to ensure correctness
+        pointwise_distances = []
+        for target_row in self.target_latents:
+            for source_row in self.source_latents:
+                tmp_distance = torch.sqrt(torch.sum((target_row - source_row) ** 2))
+                pointwise_distances.append(float(tmp_distance))
 
-        pass
+        return np.mean(pointwise_distances)
 
 
 class LatentApproxDistance(BaseDistance):
