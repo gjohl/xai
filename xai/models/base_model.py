@@ -1,4 +1,5 @@
 import abc
+from pathlib import Path
 
 import torch
 from simplexai.models.base import BlackBox
@@ -10,7 +11,24 @@ class BaseModel(BlackBox):
     def model_category(self):
         pass
 
-    def save(self, output_path):
+    def predict(self, input_data: torch.Tensor) -> torch.Tensor:
+        """Generate predictions for the given input data
+
+        Parameters
+        ----------
+        input_data: torch.Tensor
+            Input data to generate predictions for.
+
+        Returns
+        -------
+        outputs: torch.Tensor
+            Output of the model.
+        """
+        with torch.no_grad():
+            outputs = self(input_data)
+        return outputs
+
+    def save(self, output_path: Path):
         """Save the model parameters to a file.
 
         Parameters
@@ -20,7 +38,7 @@ class BaseModel(BlackBox):
         """
         torch.save(self.state_dict(), output_path)
 
-    def load(self, model_path):
+    def load(self, model_path: Path):
         """Load the model parameters from a file.
 
         Parameters

@@ -1,7 +1,7 @@
 import logging
+from pathlib import Path
 
 import numpy as np
-
 import torch
 from torch.nn.modules.loss import _Loss, CrossEntropyLoss
 import torch.optim as optim
@@ -44,12 +44,12 @@ class Learner:
         train_model(self.model, self.train_loader, self.validation_loader,
                     self.num_epochs, self.loss_function, self.optimizer)
 
-    def predict(self, input_data):
-        return self.model(input_data)
+    def predict(self, input_data: torch.Tensor) -> torch.Tensor:
+        """Generate predictions for the given input data"""
+        return self.model.predict(input_data)
 
-    def save_model(self, output_path):
-        """
-        Save the trained model parameters to a file.
+    def save_model(self, output_path: Path):
+        """Save the trained model parameters to a file.
 
         Parameters
         ----------
