@@ -36,7 +36,7 @@ class SimplexDistance(BaseDistance):
         # TODO GJ: maybe we want to investigate the distribution of these values?
         #  Set this as a class attribute now so we have it to hand without needing to recalculate anything
         self._distance_per_point = self.target_latents - target_latents_approx
-        residual = torch.sqrt(torch.sum(self._distance_per_point ** 2))
+        residual = torch.sqrt(torch.sum(self._distance_per_point ** 2))  # TODO GJ use torch.cdist
         return float(residual)
 
     def _fit_simplex(self):

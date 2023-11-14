@@ -41,6 +41,7 @@ class Learner:
         self.optimizer = self.optimizer_class(self.model.parameters(), **self.optimizer_kwargs)
 
     def fit(self):
+        """Fit the model to the training data using the given hyperparameters."""
         train_model(self.model, self.train_loader, self.validation_loader,
                     self.num_epochs, self.loss_function, self.optimizer)
 
