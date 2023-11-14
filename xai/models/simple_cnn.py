@@ -6,6 +6,7 @@ from xai.models.base_model import BaseModel
 
 
 class CNNClassifier(BaseModel):
+    # Adapted from https://github.com/vanderschaarlab/Simplex/blob/0af504927122d59dfc1378b73d0292244213e982/src/simplexai/models/image_recognition.py#L8  # noqa: E501
     def __init__(self) -> None:
         """CNN binary classifier model"""
         super().__init__()
