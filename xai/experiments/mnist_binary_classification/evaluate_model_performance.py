@@ -8,7 +8,7 @@ from xai.models.simple_cnn import CNNBinaryClassifier
 
 
 MODEL_FNAME = 'binary_cnn_mnist_run_1.pth'
-BATCH_SIZE = 64
+BATCH_SIZE = 1024
 
 
 def run_multiple(digits, num_samples):
@@ -98,7 +98,16 @@ def get_count_per_digit(digits, num_samples_per_class, out_of_dist_pct):
 # digits = (0, 1, 6)
 # num_samples = 30
 
-# metrics_dict = run_multiple((0, 1, 6), 30)
-# import pandas as pd
-# pd.DataFrame(metrics_dict).T
+import pandas as pd
+metrics_dict = run_multiple((0, 1, 6), 300)
+df = pd.DataFrame(metrics_dict).T
 
+import pickle
+output_fpath = '/home/gurp/workspace/xai/xai/experiments/results/mnist_extrapolation_016_300.pkl'
+
+with open(output_fpath, 'wb') as handle:
+    pickle.dump(metrics_dict, handle, protocol=pickle.HIGHEST_PROTOCOL)
+
+df[['accuracy', 'simplex']]
+
+from matplotlib import pyplot as plt
