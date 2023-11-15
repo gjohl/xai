@@ -64,5 +64,3 @@ class TestDatasetSubSetByDigit:
         dl_inputs, dl_labels = next(iter(dl))
         assert all([label in digits for label in dl_labels])
         assert all([int(sum(dl_labels == digit)) == count_per_digit[digit] for digit in count_per_digit])
-
-

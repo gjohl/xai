@@ -70,8 +70,8 @@ def load_mnist_binary(
     subset_size=None,
     shuffle: bool = True,
     data_dir=DATA_DIR,
-    digits: List[int]=None,
-    count_per_digit: Dict[int, int]=None
+    digits: List[int] = None,
+    count_per_digit: Dict[int, int] = None
 ) -> DataLoader:
     """Load MNIST data reframed for a binary classification task of distinguishing 1s.
 
@@ -152,4 +152,3 @@ def dataset_subset_by_digit(dataset: Dataset, digits: List[int], count_per_digit
     digits_idx = digits_union_mask.nonzero().squeeze()
 
     return torch.utils.data.Subset(dataset, digits_idx)
-
