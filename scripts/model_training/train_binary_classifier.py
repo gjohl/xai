@@ -9,8 +9,6 @@ from xai.models.training import Learner
 
 @click.command()
 @click.option("--model_filename", help="Filename to save the trained model.")
-@click.option("--batch_size", help="Filename to save the trained model.")
-@click.option("--num_epochs", help="Filename to save the trained model.")
 def run_model_training(
         model_filename,
         batch_size=64,

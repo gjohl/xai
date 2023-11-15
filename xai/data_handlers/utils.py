@@ -24,3 +24,20 @@ def load_training_data_mnist_binary(
     validation_dl = DataLoader(validation_set, batch_size=batch_size, shuffle=False)  # No need to shuffle validation
 
     return train_dl, validation_dl
+
+
+def load_test_data_mnist_binary(
+        batch_size: int, shuffle: bool, digits=[0, 1], count_per_digit=None, subset_size: int = None
+) -> DataLoader:
+    """Load test DataLoader for binary classification experiment."""
+    test_dataset = load_mnist_binary_dataset(
+        train=True,
+        subset_size=subset_size,
+        data_dir=DATA_DIR,
+        target_digit=1,
+        digits=digits,
+        count_per_digit=count_per_digit
+    )
+    test_dl = DataLoader(test_dataset, batch_size=batch_size, shuffle=shuffle)
+
+    return test_dl
