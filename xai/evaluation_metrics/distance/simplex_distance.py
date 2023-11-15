@@ -1,4 +1,3 @@
-import numpy as np
 import torch
 from simplexai.explainers.simplex import Simplex
 
