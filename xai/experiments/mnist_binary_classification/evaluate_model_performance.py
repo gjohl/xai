@@ -1,5 +1,6 @@
 import pickle
 
+from simplexai.explainers.simplex import Simplex
 import torch
 
 from xai.constants import MODEL_DIR, RESULTS_DIR
@@ -11,11 +12,10 @@ from xai.models.simple_cnn import CNNBinaryClassifier
 
 MODEL_FNAME = 'binary_cnn_mnist_run_1.pth'
 BATCH_SIZE = 1024
-RESULTS_OUTPUT_DIR = RESULTS_DIR / 'mnist_binary_classification'
 
 
 def run_and_save_results(output_fname, digits, num_samples):
-    output_fpath = RESULTS_OUTPUT_DIR / output_fname
+    output_fpath = RESULTS_DIR / output_fname
     metrics_dict = run_multiple(digits, num_samples)
 
     with open(output_fpath, 'wb') as handle:
@@ -26,7 +26,11 @@ def run_and_save_results(output_fname, digits, num_samples):
 
 def run_multiple(digits, num_samples):
     model = load_binary_classification_model(MODEL_FNAME)
-    train_dl, _ = load_training_data_mnist_binary(batch_size=BATCH_SIZE, shuffle=False, train_validation_split=[1., 0.])
+    train_dl, validation_dl = load_training_data_mnist_binary(batch_size=BATCH_SIZE,
+                                                              shuffle=False,
+                                                              train_validation_split=[0.8, 0.2])
+    source_data, _ = next(iter(train_dl))
+    validation_data = next(iter(validation_dl))
 
     out_of_dist_pct_range = [k/10 for k in range(11)]
     metrics_dict = {}
@@ -36,9 +40,17 @@ def run_multiple(digits, num_samples):
         count_per_digit = get_count_per_digit(digits, num_samples, out_of_dist_pct)
         test_dl = load_test_data_mnist_binary(batch_size=BATCH_SIZE, shuffle=True,
                                               digits=digits, count_per_digit=count_per_digit)
+        target_data, _ = next(iter(test_dl))
+
+        if idx == 0:
+            # Fit simplex on the first iteration
+            source_latents = model.latent_representation(source_data).detach()
+            validation_latents = model.latent_representation(validation_data).detach()
+            simplex = Simplex(corpus_examples=source_data, corpus_latent_reps=source_latents)
+            simplex.fit(test_examples=validation_data, test_latent_reps=validation_latents, reg_factor=0, n_epoch=10000)
 
         accuracy_metrics = model_accuracy_metrics(model, test_dl)
-        distance_metrics = model_distance_metrics(model, train_dl, test_dl)
+        distance_metrics = model_distance_metrics(model, source_data, target_data, simplex)
         results_dict = accuracy_metrics | distance_metrics  # Merge dicts into single result
         metrics_dict[out_of_dist_pct] = results_dict
 
@@ -58,12 +70,9 @@ def model_accuracy_metrics(model, test_dl):
     return metrics
 
 
-def model_distance_metrics(model, train_dl, test_dl):
-    source_data, _ = next(iter(train_dl))
-    target_data, _ = next(iter(test_dl))
-
+def model_distance_metrics(model, source_data, target_data, simplex):
     distance_dict = {}
-    simplex_dist = SimplexDistance(model, source_data, target_data)
+    simplex_dist = SimplexDistance(model, source_data, target_data, simplex)
     latent_pw_dist = LatentPointwiseDistance(model, source_data, target_data)
     latent_approx_dist = LatentApproxDistance(model, source_data, target_data)
 

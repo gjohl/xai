@@ -42,5 +42,5 @@ class SimplexDistance(BaseDistance):
     def _fit_simplex(self):
         """Fit a simplex explainer to the model and data."""
         simplex = Simplex(corpus_examples=self.source_data, corpus_latent_reps=self.source_latents)
-        simplex.fit(test_examples=self.target_data, test_latent_reps=self.target_latents, reg_factor=0, n_epoch=5000)
+        simplex.fit(test_examples=self.target_data, test_latent_reps=self.target_latents, reg_factor=0, n_epoch=10000)
         self.simplex = simplex
