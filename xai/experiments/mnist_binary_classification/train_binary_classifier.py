@@ -14,7 +14,7 @@ def run_model_training(
         batch_size=64,
         shuffle=True,
         train_validation_split=[0.8, 0.2],
-        num_epochs=20
+        num_epochs=10
 ):
     model = CNNBinaryClassifier()
     train_dl, validation_dl = load_training_data_mnist_binary(batch_size, shuffle, train_validation_split)

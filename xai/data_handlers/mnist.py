@@ -108,7 +108,7 @@ def load_mnist_binary_dataset(
             torchvision.transforms.ToTensor(),
             torchvision.transforms.Normalize(*DEFAULT_MNIST_NORMALIZATION),
         ]),
-        target_transform=lambda x: torch.tensor((x == target_digit), dtype=torch.float32)
+        target_transform=lambda x: torch.tensor((x == target_digit), dtype=torch.long)
     )
 
     if digits:
