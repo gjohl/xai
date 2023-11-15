@@ -1,6 +1,5 @@
 import click
 from torch.utils.data import DataLoader
-from torch.nn.modules.loss import BCELoss
 
 from xai.constants import MODEL_DIR
 from xai.data_handlers.utils import load_training_data_mnist_binary
@@ -27,7 +26,7 @@ def run_model_training(
 
 def train_model(model: BaseModel, train_dl: DataLoader, validation_dl: DataLoader, num_epochs: int):
     """Train a model on the given data"""
-    learn = Learner(model, train_dl, validation_dl, num_epochs, loss_function=BCELoss())
+    learn = Learner(model, train_dl, validation_dl, num_epochs)
     learn.fit()
     return learn
 
