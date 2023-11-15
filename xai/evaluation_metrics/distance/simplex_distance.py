@@ -1,3 +1,4 @@
+import numpy as np
 import torch
 from simplexai.explainers.simplex import Simplex
 
@@ -24,7 +25,7 @@ class SimplexDistance(BaseDistance):
             Default is None, which will train a new simplex model.
         """
         super().__init__(model, source_data, target_data)
-        self.simplex = None
+        self.simplex = simplex
 
     def distance(self):
         """float: Simplex distance based on the residual."""
@@ -36,8 +37,8 @@ class SimplexDistance(BaseDistance):
         # TODO GJ: maybe we want to investigate the distribution of these values?
         #  Set this as a class attribute now so we have it to hand without needing to recalculate anything
         self._distance_per_point = self.target_latents - target_latents_approx
-        residual = torch.sqrt(torch.sum(self._distance_per_point ** 2))  # TODO GJ use torch.cdist
-        return float(residual)
+        residual = torch.sqrt(torch.sum(self._distance_per_point ** 2))
+        return float(residual) / (np.prod(self._distance_per_point.shape))
 
     def _fit_simplex(self):
         """Fit a simplex explainer to the model and data."""
