@@ -2,7 +2,7 @@ import torch
 
 from xai.constants import MODEL_DIR
 from xai.data_handlers.utils import load_test_data_mnist_binary
-from xai.evaluation_metrics.performance import calculate_evaluation_metrics
+from xai.evaluation_metrics.performance import calculate_accuracy_metrics
 from xai.models.simple_cnn import CNNBinaryClassifier
 
 
@@ -32,8 +32,12 @@ def load_binary_classification_model(model_filename=MODEL_FNAME):
 def evaluate_model_metrics(model, digits, count_per_digit):
     """Evaluate the model metrics for a given set of test digits."""
     test_dl = load_test_data_mnist_binary(batch_size=64, shuffle=True, digits=digits, count_per_digit=count_per_digit)
+    # Accuracy metrics
     output_probs, predicted_classes, test_labels = calculate_model_predictions(model, test_dl)
-    metrics = calculate_evaluation_metrics(test_labels, predicted_classes, output_probs)
+    metrics = calculate_accuracy_metrics(test_labels, predicted_classes, output_probs)
+
+    # Distance metrics
+
     return metrics
 
 
