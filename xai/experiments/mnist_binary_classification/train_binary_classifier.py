@@ -7,13 +7,6 @@ from xai.models.simple_cnn import CNNBinaryClassifier, BaseModel
 from xai.models.training import Learner
 
 
-# DEBUG
-batch_size = 64
-shuffle = True
-train_validation_split = [0.8, 0.2]
-num_epochs = 10
-
-
 @click.command()
 @click.option("--model_filename", help="Filename to save the trained model.")
 def run_model_training(
