@@ -63,33 +63,37 @@ def load_mnist(
     return DataLoader(dataset, batch_size=batch_size, shuffle=shuffle)
 
 
-def load_mnist_binary(
-    batch_size: int,
+def load_mnist_binary_dataset(
     train: bool,
     target_digit: int,
     subset_size=None,
-    shuffle: bool = True,
     data_dir=DATA_DIR,
     digits: List[int] = None,
     count_per_digit: Dict[int, int] = None
-) -> DataLoader:
+) -> Dataset:
     """Load MNIST data reframed for a binary classification task of distinguishing 1s.
 
     Parameters
     ----------
-    batch_size: int
-        Number of samples per batch to load.
     train: bool
         Whether to create the dataset using the training image set `train-images-idx3-ubyte` or
         the test set `t10k-images-idx3-ubyte`.
+    target_digit: int
+        The digit to use as the target of the binary classification.
+        E.g. if target_digit=1, then the dataset will set target labels to True for 1 and False otherwise.
     subset_size: int, optional
         If set, this extracts a subset of a given size rather than the full data set.
         Defaults to None, which loads the entire data set.
-    shuffle: bool, optional
-        Whether to reshuffle the data at every epoch.
     data_dir: path-like, optional
         The directory to download files to.
         This defaults to the `data` subdirectory of the xai project.
+    digits: list of int, optional
+        Digits to include from the original dataset.
+        If None, include all digits.
+    count_per_digit: dict, optional
+        Keys are the digits, values are the number of instances of that digit that we want.
+        If None, include all instances.
+
 
     Returns
     -------
@@ -104,7 +108,7 @@ def load_mnist_binary(
             torchvision.transforms.ToTensor(),
             torchvision.transforms.Normalize(*DEFAULT_MNIST_NORMALIZATION),
         ]),
-        target_transform=lambda x: x == target_digit
+        target_transform=lambda x: torch.tensor((x == target_digit), dtype=torch.float32)
     )
 
     if digits:
@@ -114,7 +118,7 @@ def load_mnist_binary(
         dataset = torch.utils.data.Subset(
             dataset, torch.randperm(len(dataset))[:subset_size]
         )
-    return DataLoader(dataset, batch_size=batch_size, shuffle=shuffle)
+    return dataset
 
 
 def dataset_subset_by_digit(dataset: Dataset, digits: List[int], count_per_digit: Dict[int, int] = None):
@@ -127,7 +131,7 @@ def dataset_subset_by_digit(dataset: Dataset, digits: List[int], count_per_digit
     digits: list of int
         Digits to include from the original dataset.
         If None, include all digits.
-    count_per_digit: dict
+    count_per_digit: dict, optional
         Keys are the digits, values are the number of instances of that digit that we want.
         If None, include all instances.
 
