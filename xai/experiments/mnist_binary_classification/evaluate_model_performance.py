@@ -7,14 +7,41 @@ from xai.models.simple_cnn import CNNBinaryClassifier
 
 
 MODEL_FNAME = 'binary_cnn_mnist_run_1.pth'
+DIGITS = (0, 1, 2)
+NUM_SAMPLES_PER_CLASS = 1000
 
 
-def run_model_evaluation():
+def run_multiple():
     model = load_binary_classification_model(MODEL_FNAME)
-    test_dl = load_test_data_mnist_binary(batch_size=64, shuffle=True)
-    output_probs, predicted_classes, test_labels = calculate_model_predictions(model, test_dl)
-    metrics = calculate_evaluation_metrics(test_labels, predicted_classes, output_probs)
-    return metrics
+
+    out_of_dist_pct_range = [k/10 for k in range(11)]
+    metrics_dict = {}
+    for idx, out_of_dist_pct in enumerate(out_of_dist_pct_range):
+        print(f"Running metrics for {idx+1} of {len(out_of_dist_pct_range)}")
+        out_of_dist_num_samples = int(NUM_SAMPLES_PER_CLASS*out_of_dist_pct)
+        count_per_digit = {
+            0: NUM_SAMPLES_PER_CLASS - out_of_dist_num_samples,
+            1: NUM_SAMPLES_PER_CLASS,
+            2: out_of_dist_num_samples,
+        }
+        metrics = evaluate_model_metrics(model, DIGITS, count_per_digit)
+        metrics_dict[out_of_dist_pct] = metrics
+
+
+def get_count_per_digit(digits, num_samples_per_class, out_of_dist_pct):
+    # The count for 0 and 1 are determined completely by num_samples_per_class and out_of_dist_pct
+    out_of_dist_num_samples = num_samples_per_class * out_of_dist_pct
+    count_per_digit = {
+        0: num_samples_per_class - int(out_of_dist_num_samples),
+        1: num_samples_per_class
+    }
+
+    # The count of out of dist digits depends on how many there are
+    out_of_dist_digits = set(digits).difference({0, 1})
+    for digit in out_of_dist_digits:
+        count_per_digit[digit] = int(out_of_dist_num_samples / len(out_of_dist_digits))
+
+    return count_per_digit
 
 
 def load_binary_classification_model(model_filename=MODEL_FNAME):
@@ -23,7 +50,16 @@ def load_binary_classification_model(model_filename=MODEL_FNAME):
     return model
 
 
+def evaluate_model_metrics(model, digits, count_per_digit):
+    """Evaluate the model metrics for a given set of test digits."""
+    test_dl = load_test_data_mnist_binary(batch_size=64, shuffle=True, digits=digits, count_per_digit=count_per_digit)
+    output_probs, predicted_classes, test_labels = calculate_model_predictions(model, test_dl)
+    metrics = calculate_evaluation_metrics(test_labels, predicted_classes, output_probs)
+    return metrics
+
+
 def calculate_model_predictions(model, test_dl):
+    """Use the model to generate predictions on the test data."""
     test_labels_list = []
     output_probs_list = []
     for test_inputs, test_labels in test_dl:
