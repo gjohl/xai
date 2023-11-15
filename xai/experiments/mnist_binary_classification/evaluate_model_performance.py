@@ -11,7 +11,7 @@ from xai.models.simple_cnn import CNNBinaryClassifier
 
 
 MODEL_FNAME = 'binary_cnn_mnist_run_1.pth'
-BATCH_SIZE = 1024
+BATCH_SIZE = 64
 
 
 def run_and_save_results(output_fname, digits, num_samples):
@@ -30,7 +30,13 @@ def run_multiple(digits, num_samples):
                                                               shuffle=False,
                                                               train_validation_split=[0.8, 0.2])
     source_data, _ = next(iter(train_dl))
-    validation_data = next(iter(validation_dl))
+    validation_data, _ = next(iter(validation_dl))
+
+    # Fit simplex on the validation data
+    source_latents = model.latent_representation(source_data).detach()
+    validation_latents = model.latent_representation(validation_data).detach()
+    simplex = Simplex(corpus_examples=source_data, corpus_latent_reps=source_latents)
+    simplex.fit(test_examples=validation_data, test_latent_reps=validation_latents, reg_factor=0, n_epoch=10000)
 
     out_of_dist_pct_range = [k/10 for k in range(11)]
     metrics_dict = {}
@@ -41,13 +47,6 @@ def run_multiple(digits, num_samples):
         test_dl = load_test_data_mnist_binary(batch_size=BATCH_SIZE, shuffle=True,
                                               digits=digits, count_per_digit=count_per_digit)
         target_data, _ = next(iter(test_dl))
-
-        if idx == 0:
-            # Fit simplex on the first iteration
-            source_latents = model.latent_representation(source_data).detach()
-            validation_latents = model.latent_representation(validation_data).detach()
-            simplex = Simplex(corpus_examples=source_data, corpus_latent_reps=source_latents)
-            simplex.fit(test_examples=validation_data, test_latent_reps=validation_latents, reg_factor=0, n_epoch=10000)
 
         accuracy_metrics = model_accuracy_metrics(model, test_dl)
         distance_metrics = model_distance_metrics(model, source_data, target_data, simplex)
