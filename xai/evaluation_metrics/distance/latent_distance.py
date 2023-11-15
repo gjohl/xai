@@ -12,7 +12,7 @@ class LatentPointwiseDistance(BaseDistance):
         pointwise_distances = []
         for target_row in self.target_latents:
             for source_row in self.source_latents:
-                tmp_distance = torch.sqrt(torch.sum((target_row - source_row) ** 2))  # TODO GJ use torch.cdist
+                tmp_distance = torch.sqrt(torch.sum((target_row - source_row) ** 2))  # TODO GJ use torch.norm
                 pointwise_distances.append(float(tmp_distance))
 
         return np.mean(pointwise_distances)
@@ -29,5 +29,5 @@ class LatentApproxDistance(BaseDistance):
         self._distance_per_point = self.target_latents - centroid
         self._distance_per_point_scaled = torch.nan_to_num(self._distance_per_point / sigma)
 
-        residual = torch.sqrt(torch.sum(self._distance_per_point_scaled ** 2))  # TODO GJ use torch.cdist
+        residual = torch.sqrt(torch.sum(self._distance_per_point_scaled ** 2))  # TODO GJ use torch.norm
         return float(residual)
