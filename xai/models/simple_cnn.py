@@ -8,7 +8,7 @@ from xai.models.base_model import BaseModel
 class CNNClassifier(BaseModel):
     # Adapted from https://github.com/vanderschaarlab/Simplex/blob/0af504927122d59dfc1378b73d0292244213e982/src/simplexai/models/image_recognition.py#L8  # noqa: E501
     def __init__(self) -> None:
-        """CNN binary classifier model"""
+        """CNN multiclass classifier model"""
         super().__init__()
         self.conv1 = nn.Conv2d(1, 10, kernel_size=5)
         self.conv2 = nn.Conv2d(10, 20, kernel_size=5)
@@ -17,7 +17,7 @@ class CNNClassifier(BaseModel):
         self.fc2 = nn.Linear(50, 10)
 
     def model_category(self):
-        return "SimpleCNN"
+        return "CNNMulticlassClassifier"
 
     def latent_representation(self, x: torch.Tensor) -> torch.Tensor:
         """
@@ -98,3 +98,17 @@ class CNNClassifier(BaseModel):
         """
         x = self.presoftmax(x)
         return F.softmax(x, dim=-1)
+
+
+class CNNBinaryClassifier(CNNClassifier):
+    def __init__(self) -> None:
+        """CNN binary classifier model"""
+        super().__init__()
+        self.conv1 = nn.Conv2d(1, 10, kernel_size=5)
+        self.conv2 = nn.Conv2d(10, 20, kernel_size=5)
+        self.conv2_drop = nn.Dropout2d()
+        self.fc1 = nn.Linear(320, 50)
+        self.fc2 = nn.Linear(50, 2)
+
+    def model_category(self):
+        return "CNNBinaryClassifier"
