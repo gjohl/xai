@@ -108,11 +108,11 @@ class CNNBinaryClassifier(CNNClassifier):
         self.conv2 = nn.Conv2d(10, 20, kernel_size=5)
         self.conv2_drop = nn.Dropout2d()
         self.fc1 = nn.Linear(320, 50)
-        self.fc2 = nn.Linear(50, 1)
+        self.fc2 = nn.Linear(50, 2)
 
     def model_category(self):
         return "CNNBinaryClassifier"
 
-    def latent_to_presoftmax(self, h: torch.Tensor) -> torch.Tensor:
-
-        return self.fc2(h).view(-1)
+    # def latent_to_presoftmax(self, h: torch.Tensor) -> torch.Tensor:
+    #
+    #     return self.fc2(h)#.view(-1)
