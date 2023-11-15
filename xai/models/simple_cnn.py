@@ -112,7 +112,3 @@ class CNNBinaryClassifier(CNNClassifier):
 
     def model_category(self):
         return "CNNBinaryClassifier"
-
-    # def latent_to_presoftmax(self, h: torch.Tensor) -> torch.Tensor:
-    #
-    #     return self.fc2(h)#.view(-1)
