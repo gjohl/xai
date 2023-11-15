@@ -1,24 +1,33 @@
 import torch
 
 from xai.constants import MODEL_DIR
-from xai.data_handlers.utils import load_test_data_mnist_binary
+from xai.data_handlers.utils import load_training_data_mnist_binary, load_test_data_mnist_binary
+from xai.evaluation_metrics.distance import SimplexDistance, LatentPointwiseDistance, LatentApproxDistance
 from xai.evaluation_metrics.performance import calculate_accuracy_metrics
 from xai.models.simple_cnn import CNNBinaryClassifier
 
 
 MODEL_FNAME = 'binary_cnn_mnist_run_1.pth'
+BATCH_SIZE = 64
 
 
 def run_multiple(digits, num_samples):
     model = load_binary_classification_model(MODEL_FNAME)
+    train_dl, _ = load_training_data_mnist_binary(batch_size=BATCH_SIZE, shuffle=False, train_validation_split=[1., 0.])
 
     out_of_dist_pct_range = [k/10 for k in range(11)]
     metrics_dict = {}
     for idx, out_of_dist_pct in enumerate(out_of_dist_pct_range):
         print(f"Running metrics for {idx+1} of {len(out_of_dist_pct_range)}")
+        results_dict = {}
         count_per_digit = get_count_per_digit(digits, num_samples, out_of_dist_pct)
-        metrics = evaluate_model_metrics(model, digits, count_per_digit)
-        metrics_dict[out_of_dist_pct] = metrics
+        test_dl = load_test_data_mnist_binary(batch_size=BATCH_SIZE, shuffle=True,
+                                              digits=digits, count_per_digit=count_per_digit)
+
+        accuracy_metrics = model_accuracy_metrics(model, test_dl)
+        distance_metrics = model_distance_metrics(model, train_dl, test_dl)
+        results_dict = accuracy_metrics | distance_metrics  # Merge dicts into single result
+        metrics_dict[out_of_dist_pct] = results_dict
 
     return metrics_dict
 
@@ -29,16 +38,28 @@ def load_binary_classification_model(model_filename=MODEL_FNAME):
     return model
 
 
-def evaluate_model_metrics(model, digits, count_per_digit):
+def model_accuracy_metrics(model, test_dl):
     """Evaluate the model metrics for a given set of test digits."""
-    test_dl = load_test_data_mnist_binary(batch_size=64, shuffle=True, digits=digits, count_per_digit=count_per_digit)
-    # Accuracy metrics
     output_probs, predicted_classes, test_labels = calculate_model_predictions(model, test_dl)
     metrics = calculate_accuracy_metrics(test_labels, predicted_classes, output_probs)
-
-    # Distance metrics
-
     return metrics
+
+
+def model_distance_metrics(model, train_dl, test_dl):
+    source_data, _ = next(iter(train_dl))
+    target_data, _ = next(iter(test_dl))
+
+    distance_dict = {}
+    simplex_dist = SimplexDistance(model, source_data, target_data)
+    latent_pw_dist = LatentPointwiseDistance(model, source_data, target_data)
+    latent_approx_dist = LatentApproxDistance(model, source_data, target_data)
+
+    distance_dict['simplex'] = simplex_dist.distance()
+    distance_dict['latent_pointwise'] = latent_pw_dist.distance()
+    distance_dict['latent_approx'] = latent_approx_dist.distance()
+    distance_dict['latent_approx_unscaled'] = float(torch.sqrt(torch.sum(latent_approx_dist._distance_per_point ** 2)))
+
+    return distance_dict
 
 
 def calculate_model_predictions(model, test_dl):
@@ -74,5 +95,10 @@ def get_count_per_digit(digits, num_samples_per_class, out_of_dist_pct):
 
 
 # TODO GJ: remove
+# digits = (0, 1, 6)
+# num_samples = 30
+
 # metrics_dict = run_multiple((0, 1, 6), 30)
-# {k: v['auc'] for k,v in metrics_dict.items()}
+# import pandas as pd
+# pd.DataFrame(metrics_dict).T
+

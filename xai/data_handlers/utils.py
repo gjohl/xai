@@ -8,7 +8,7 @@ from xai.data_handlers.mnist import load_mnist_binary_dataset
 
 
 def load_training_data_mnist_binary(
-        batch_size: int, shuffle: bool, train_validation_split: List[int], subset_size: int = None
+        batch_size: int, shuffle: bool, train_validation_split: List[float], subset_size: int = None
 ) -> Tuple[DataLoader, DataLoader]:
     """Load training and validation DataLoaders for a subset containing 0s and 1s."""
     train_input_dataset = load_mnist_binary_dataset(
