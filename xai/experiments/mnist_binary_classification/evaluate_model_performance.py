@@ -1,4 +1,3 @@
-from sklearn.metrics import accuracy_score, auc, f1_score, roc_auc_score
 import torch
 
 from xai.constants import MODEL_DIR
@@ -15,6 +14,7 @@ def run_model_evaluation():
     test_dl = load_test_data_mnist_binary(batch_size=64, shuffle=True)
     output_probs, predicted_classes, test_labels = calculate_model_predictions(model, test_dl)
     metrics = calculate_evaluation_metrics(test_labels, predicted_classes, output_probs)
+    return metrics
 
 
 def load_binary_classification_model(model_filename=MODEL_FNAME):

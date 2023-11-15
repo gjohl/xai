@@ -24,10 +24,7 @@ def run_model_training(
 
 def train_model(model: BaseModel, train_dl: DataLoader, validation_dl: DataLoader, num_epochs: int):
     """Train a model on the given data"""
-    optimizer_kwargs = dict(lr=0.01, momentum=0.5, weight_decay=0.01)
-    #dict(lr=0.00001)# , momentum=0.05, weight_decay=0.001)
-
-    learn = Learner(model, train_dl, validation_dl, num_epochs, optimizer_kwargs=optimizer_kwargs)
+    learn = Learner(model, train_dl, validation_dl, num_epochs)
     learn.fit()
     return learn
 
