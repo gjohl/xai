@@ -28,6 +28,8 @@ def run_multiple(digits, num_samples):
     model = load_binary_classification_model(MODEL_FNAME)
     train_dl, validation_dl = load_training_data_mnist_binary(batch_size=BATCH_SIZE,
                                                               shuffle=False,
+                                                              digits=[0, 1],
+                                                              count_per_digit={0: 0, 1: 500},
                                                               train_validation_split=[0.8, 0.2])
     source_data, _ = next(iter(train_dl))
     validation_data, _ = next(iter(validation_dl))

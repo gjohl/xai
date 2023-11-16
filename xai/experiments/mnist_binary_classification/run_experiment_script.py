@@ -28,7 +28,7 @@ def plot_accuracy_distance(df):
 
 digits = (0, 1, 2, 3, 4, 5, 6, 7, 8, 9)
 num_samples = 100
-output_fname = f"mnist_extrapolation_{''.join([str(digit) for digit in digits])}_{num_samples}_simplex.pkl"
+output_fname = f"mnist_extrapolation_{''.join([str(digit) for digit in digits])}_{num_samples}_1s.pkl"
 metrics_dict = run_and_save_results(output_fname, digits, num_samples)
 df = pd.DataFrame(metrics_dict).T
 plot_accuracy_distance(df)
