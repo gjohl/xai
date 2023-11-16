@@ -28,6 +28,12 @@ source_data, source_labels = next(iter(train_dl))
 validation_data, validation_labels = next(iter(validation_dl))
 test_data, test_labels = next(iter(test_dl))
 
+# Load data by original label (digit) rather than boolean
+input_data = test_dl.dataset.dataset.data
+input_data = torchvision.transforms.Normalize(*DEFAULT_MNIST_NORMALIZATION)(input_data / 255)
+input_data = input_data[:, None, :, :]  # A 1 dimension went missing somewhere?
+labels = test_dl.dataset.dataset.targets
+
 
 # ---------------Plot different digits in latent space---------------
 digits = (0, 1, 7)
@@ -39,12 +45,6 @@ def get_digit_mask(labels, digit, n):
     count_mask = torch.cumsum(label_mask, 0) <= n
     idx_mask = label_mask & count_mask
     return idx_mask
-
-# Load data by original label (digit) rather than boolean
-input_data = test_dl.dataset.dataset.data
-input_data = torchvision.transforms.Normalize(*DEFAULT_MNIST_NORMALIZATION)(input_data / 255)
-input_data = input_data[:, None, :, :]  # A 1 dimension went missing somewhere?
-labels = test_dl.dataset.dataset.targets
 
 # Select a subset of points to plot
 input_data_list = []
@@ -61,77 +61,64 @@ labels_all = torch.cat(label_list)
 latents = model.latent_representation(input_data_all).detach()
 
 # Create a scatter plot for each unique label
-plt.figure()
+def plot_latent_space_2d(latents, labels_all, digits):
+    fig = plt.figure()
 
-for digit in digits:
-    # Plot each label one-by-one
-    x_data = latents[labels_all == digit, 0]
-    y_data = latents[labels_all == digit, 1]
-    plt.scatter(x_data, y_data, alpha=0.5, label=f'Digit {digit}')
+    for digit in digits:
+        # Plot each label one-by-one
+        x_data = latents[labels_all == digit, 0]
+        y_data = latents[labels_all == digit, 1]
+        plt.scatter(x_data, y_data, alpha=0.5, label=f'Digit {digit}')
 
-plt.xlabel('Latent Dimension 1')
-plt.ylabel('Latent Dimension 2')
-plt.title("Input digits in the model's latent space")
-plt.legend()
-plt.show()
+    plt.xlabel('Latent Dimension 1')
+    plt.ylabel('Latent Dimension 2')
+    plt.title("Input digits in the model's latent space")
+    plt.legend()
+    return fig
+
+
+plot_latent_space_2d(latents, labels_all, digits)
 
 
 # ---------------Plot residual shift---------------
 # Fit simplex model
 sd = SimplexDistance(model, source_data, input_data_all)
 sd.distance()
-
-# Get residual coordinate pairs
-target_latents_approx = sd.simplex.latent_approx()
-latents[0]
-target_latents_approx[0]
+latents_approx = sd.simplex.latent_approx()
 
 # Plot line segments / movement
-color_map = {
-    0: 'b',
-    1: 'r',
-    7: 'g'
+COLOR_MAP = {
+    0: 'k',
+    1: 'b',
+    2: 'r',
+    3: 'g',
+    4: 'c',
+    5: 'm',
+    6: 'y',
+    7: '#4B2C5E',  # maroon
+    8: '#6E6E6E',  # grey
+    9: '#E95C0B',  # orange
 }
-keep_n = 2  # None to keep all
-plt.figure()
-for digit in digits:
-    # Plot each label one-by-one
-    x_mask = [labels_all == digit, 0]
-    y_mask = [labels_all == digit, 1]
-    # true_start_x =
 
-    x_values = [latents[x_mask][:keep_n], target_latents_approx[x_mask][:keep_n]]
-    y_values = [latents[y_mask][:keep_n], target_latents_approx[y_mask][:keep_n]]
-    plt.plot(x_values[0], y_values[0], 'bo', c=color_map[digit],  linestyle="--", alpha=0.5)
-    plt.plot(x_values[1], y_values[1], 'bx', c=color_map[digit],  linestyle="--", alpha=0.5)
-    # plt.legend()
-
-plt.xlabel('Latent Dimension 1')
-plt.ylabel('Latent Dimension 2')
-plt.title("Input digit's movement under simplex")
-plt.show()
+keep_n = 5
 
 
+def plot_latent_shift(latents, latents_approx, digits, keep_n=None):
+    fig = plt.figure()
+    for digit in digits:
+        true_latents_digit = latents[labels_all == digit][:keep_n]
+        approx_latents_digit = latents_approx[labels_all == digit][:keep_n]
+        for idx in range(len(true_latents_digit)):
+            true_xy = true_latents_digit[idx]
+            approx_xy = approx_latents_digit[idx]
+            # Plot line joining start and end point
+            plt.plot([true_xy[0], approx_xy[0]], [true_xy[1], approx_xy[1]],
+                     c=COLOR_MAP[digit],  linestyle="--", alpha=0.3)
+            # Plot different markers for start and ends
+            plt.plot(true_xy[0], true_xy[1], marker='o', color=COLOR_MAP[digit])
+            plt.plot(approx_xy[0], approx_xy[1], marker='x', color=COLOR_MAP[digit])
 
-
-plt.figure()
-# Coordinates of the start and end points
-start_point = (1, 2)
-end_point = (3, 4)
-
-# Plot the line with a circular marker at the start and a triangle marker at the end
-plt.plot([start_point[0], end_point[0]], [start_point[1], end_point[1]], linestyle='-', color='blue')
-plt.plot(start_point[0], start_point[1], marker='o', color='blue')  # Triangle marker at the end
-plt.plot(end_point[0], end_point[1], marker='^', color='blue')  # Triangle marker at the end
-
-# Annotate the points
-plt.text(start_point[0] - 0.1, start_point[1] + 0.2, "Start")
-plt.text(end_point[0] - 0.1, end_point[1] - 0.2, "End")
-
-# Add labels and title
-plt.xlabel('X-axis')
-plt.ylabel('Y-axis')
-plt.title('Line Plot with Circular and Triangle Markers')
-
-# Show the plot
-plt.show()
+    plt.xlabel('Latent Dimension 1')
+    plt.ylabel('Latent Dimension 2')
+    plt.title("Input digit's movement under simplex")
+    return fig
