@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Tuple
 
 from matplotlib import pyplot as plt
 import torch
@@ -27,7 +27,7 @@ def plot_latent_space_2d(latents: torch.Tensor,
         # Plot each label one-by-one
         x_data = latents[labels_all == digit, 0]
         y_data = latents[labels_all == digit, 1]
-        plt.scatter(x_data, y_data, alpha=0.5, label=f'Digit {digit}')
+        plt.scatter(x_data, y_data, c=COLOR_MAP[digit], alpha=0.5, label=f'Digit {digit}')
 
     plt.xlabel('Latent Dimension 1')
     plt.ylabel('Latent Dimension 2')
@@ -59,6 +59,24 @@ def plot_latent_shift(latents: torch.Tensor,
     plt.ylabel('Latent Dimension 2')
     plt.title("Input digit's movement under simplex")
     return fig
+
+
+def get_data_and_labels_for_digits(data: torch.Tensor,
+                                   labels: torch.Tensor,
+                                   digits: List[int],
+                                   n: int) -> Tuple[torch.Tensor, torch.Tensor]:
+    """Return a data tensor and a label tensor, each containing n instances, for the given digits."""
+    data_list = []
+    label_list = []
+    for digit in digits:
+        digit_mask = get_digit_mask(labels, digit, n)
+        data_list.append(data[digit_mask])
+        label_list.append(labels[digit_mask])
+
+    data_output = torch.cat(data_list)
+    labels_output = torch.cat(label_list)
+
+    return data_output, labels_output
 
 
 def get_digit_mask(labels: torch.Tensor,
