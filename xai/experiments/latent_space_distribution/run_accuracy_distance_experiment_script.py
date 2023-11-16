@@ -1,7 +1,7 @@
 import pandas as pd
 
 from xai.constants import MODEL_DIR
-from xai.models.simple_cnn import CNNBinaryClassifier
+from xai.models.simple_cnn import CNNBinaryClassifier2D
 from xai.experiments.mnist_binary_classification.evaluate_model_performance import run_and_save_results
 from xai.experiments.mnist_binary_classification.plot_utils import plot_accuracy_distance
 
@@ -15,9 +15,9 @@ num_samples = 100
 ##############
 # Load model #
 ##############
-model_fname = 'binary_cnn_mnist_run_1.pth'
-model = CNNBinaryClassifier()
-output_fname = f"mnist_extrapolation_{''.join([str(digit) for digit in digits])}_{num_samples}_simplex.pkl"
+model_fname = "binary_cnn_mnist_2d_run_1.pth"
+output_fname = f"mnist_extrapolation_{''.join([str(digit) for digit in digits])}_{num_samples}_2d.pkl"
+model = CNNBinaryClassifier2D()
 model.load(MODEL_DIR / model_fname)
 
 #########################
