@@ -139,3 +139,15 @@ class CNNBinaryClassifier2D(CNNClassifier):
 
     def latent_to_presoftmax(self, h: torch.Tensor) -> torch.Tensor:
         return self.fc3(h)
+
+
+class CNNBinaryClassifier3D(CNNBinaryClassifier2D):
+
+    def __init__(self) -> None:
+        """CNN binary classifier model with 3-dimensional latent space"""
+        super().__init__()
+        self.fc2 = nn.Linear(50, 3)
+        self.fc3 = nn.Linear(3, 2)  # Additional layer with 2 neurons here
+
+    def model_category(self):
+        return "CNNBinaryClassifier3D"
