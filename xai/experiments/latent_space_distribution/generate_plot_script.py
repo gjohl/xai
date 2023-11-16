@@ -122,3 +122,5 @@ def plot_latent_shift(latents, latents_approx, digits, keep_n=None):
     plt.ylabel('Latent Dimension 2')
     plt.title("Input digit's movement under simplex")
     return fig
+
+plot_latent_shift(latents, latents_approx, labels_all, digits, keep_n=None)
