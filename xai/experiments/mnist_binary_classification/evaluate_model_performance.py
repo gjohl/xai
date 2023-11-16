@@ -4,7 +4,7 @@ from simplexai.explainers.simplex import Simplex
 
 from xai.constants import RESULTS_DIR
 from xai.data_handlers.utils import load_training_data_mnist_binary, load_test_data_mnist_binary
-from xai.experiments.helpers import (
+from xai.experiments.utils import (
     model_accuracy_metrics, model_distance_metrics, get_count_per_digit
 )
 

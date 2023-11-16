@@ -1,6 +1,6 @@
 import pytest
 
-from xai.experiments.helpers import get_count_per_digit
+from xai.experiments.utils import get_count_per_digit
 
 
 @pytest.mark.parametrize('digits, num_samples_per_class, out_of_dist_pct, expected', [
