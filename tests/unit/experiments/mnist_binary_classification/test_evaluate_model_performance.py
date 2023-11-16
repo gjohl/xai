@@ -1,6 +1,6 @@
 import pytest
 
-from xai.experiments.mnist_binary_classification.evaluate_model_performance import get_count_per_digit
+from xai.experiments.helpers import get_count_per_digit
 
 
 @pytest.mark.parametrize('digits, num_samples_per_class, out_of_dist_pct, expected', [
