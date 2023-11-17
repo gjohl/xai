@@ -46,7 +46,7 @@ labels = test_dl.dataset.dataset.targets
 #########################################
 digits = (0, 1, 2)
 n = 20
-latent_plot_fname = "latent_space_scatter_2d"
+latent_plot_fname = "latent_space_scatter_2d.png"
 
 test_data_digits, labels_digits = get_data_and_labels_for_digits(test_data, labels, digits, n)
 latents = model.latent_representation(test_data_digits).detach()
@@ -58,7 +58,7 @@ plt.savefig(FIGURES_DIR / latent_plot_fname, format='png')
 #######################
 # Plot residual shift #
 #######################
-residual_plot_fname = "residual_shift_2d"
+residual_plot_fname = "residual_shift_2d.png"
 sd = SimplexDistance(model, source_data, test_data_digits)
 sd.distance()
 latents_approx = sd.simplex.latent_approx()
