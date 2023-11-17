@@ -21,7 +21,7 @@ model.load(MODEL_DIR / MODEL_FNAME)
 #############
 # Load data #
 #############
-BATCH_SIZE = 64
+BATCH_SIZE = 128
 
 # Source data is used to train simplex model
 train_dl, validation_dl = load_training_data_mnist_binary(batch_size=BATCH_SIZE,
