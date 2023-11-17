@@ -52,8 +52,8 @@ def plot_latent_shift(latents: torch.Tensor,
             plt.plot([true_xy[0], approx_xy[0]], [true_xy[1], approx_xy[1]],
                      c=COLOR_MAP[digit],  linestyle="--", alpha=0.3)
             # Plot different markers for start and ends
-            plt.plot(true_xy[0], true_xy[1], marker='o', color=COLOR_MAP[digit])
-            plt.plot(approx_xy[0], approx_xy[1], marker='x', color=COLOR_MAP[digit])
+            plt.plot(true_xy[0], true_xy[1], marker='o', color=COLOR_MAP[digit], alpha=0.3)
+            plt.plot(approx_xy[0], approx_xy[1], marker='x', color=COLOR_MAP[digit], alpha=0.3)
 
     plt.xlabel('Latent Dimension 1')
     plt.ylabel('Latent Dimension 2')

@@ -1,6 +1,7 @@
+from matplotlib import pyplot as plt
 import torchvision
 
-from xai.constants import MODEL_DIR
+from xai.constants import MODEL_DIR, FIGURES_DIR
 from xai.models.simple_cnn import CNNBinaryClassifier2D
 from xai.data_handlers.utils import load_training_data_mnist_binary, load_test_data_mnist_binary
 from xai.data_handlers.mnist import DEFAULT_MNIST_NORMALIZATION
@@ -45,16 +46,21 @@ labels = test_dl.dataset.dataset.targets
 #########################################
 digits = (0, 1, 2)
 n = 20
+latent_plot_fname = "latent_space_scatter_2d"
 
 test_data_digits, labels_digits = get_data_and_labels_for_digits(test_data, labels, digits, n)
 latents = model.latent_representation(test_data_digits).detach()
 plot_latent_space_2d(latents, labels_digits, digits)
+plt.savefig(FIGURES_DIR / latent_plot_fname, format='png')
+
 
 
 #######################
 # Plot residual shift #
 #######################
+residual_plot_fname = "residual_shift_2d"
 sd = SimplexDistance(model, source_data, test_data_digits)
 sd.distance()
 latents_approx = sd.simplex.latent_approx()
 plot_latent_shift(latents, latents_approx, labels_digits, digits, keep_n=n)
+plt.savefig(FIGURES_DIR / residual_plot_fname, format='png')
