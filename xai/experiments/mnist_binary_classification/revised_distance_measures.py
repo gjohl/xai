@@ -153,11 +153,31 @@ for idx, out_of_dist_pct in enumerate(out_of_dist_pct_range):
 # Combine distance inputs #
 ###########################
 distance_df = pd.DataFrame(distance_dict).T
-distance_metrics
+distance_df['h_norm_ratio'] = distance_df['h_true_norm'] / distance_df['h_approx_norm']
+distance_df['h_norm_zeros_ratio'] = distance_df['h_true_norm_zeros'] / distance_df['h_approx_norm_zeros']
+distance_df['h_norm_ones_ratio'] = distance_df['h_true_norm_ones'] / distance_df['h_approx_norm_ones']
+distance_df['h_norm_class_mean'] = (distance_df['h_norm_zeros_ratio'] + distance_df['h_norm_ones_ratio']) / 2
+
+distance_df['h_norm_direction_zeros_ratio'] = distance_df['h_true_norm_direction_zeros'] / distance_df['h_approx_norm_direction_zeros']
+distance_df['h_norm_direction_ones_ratio'] = distance_df['h_true_norm_direction_ones'] / distance_df['h_approx_norm_direction_ones']
+distance_df['h_norm_direction_mean'] = (distance_df['h_norm_direction_zeros_ratio'] + distance_df['h_norm_direction_ones_ratio']) / 2
+
+distance_output_cols = ['h_norm_ratio',
+                        'h_norm_zeros_ratio', 'h_norm_ones_ratio',
+                        'h_norm_direction_zeros_ratio', 'h_norm_direction_ones_ratio',
+                        'h_norm_class_mean', 'h_norm_direction_mean']
 
 
 
+distance_df[distance_output_cols].plot()
+distance_df[['r_norm']].plot()
+distance_df[['h_norm_ratio']].plot()
+distance_df[['h_norm_zeros_ratio', 'h_norm_ones_ratio', 'h_norm_class_mean']].plot()
+distance_df[['h_norm_direction_zeros_ratio', 'h_norm_direction_ones_ratio', 'h_norm_direction_mean']].plot()
 
+
+pd.options.display.max_columns = 10
+distance_df[distance_output_cols]
 
 
 # Re-run with simplex retrained at each step
