@@ -22,7 +22,7 @@ from xai.experiments.latent_space_distribution.plot_utils import plot_latent_spa
 
 digits = (0, 1, 2,)
 num_samples = 100
-BATCH_SIZE = 128
+BATCH_SIZE = 1024
 
 
 ##############
@@ -90,7 +90,12 @@ out_of_dist_pct = 0.0
 norm = 2
 
 distance_dict = {}
-distance_metrics = ['h_true_norm', 'h_approx_norm', 'r_norm',
+distance_metrics = ['h_true_norm', 'h_approx_norm',
+                    'r_norm', 'r_norm_mean',
+                    'r_norm_zeros', 'r_norm_ones',
+                    'r_norm_mean_zeros', 'r_norm_mean_ones',
+                    'r_norm_direction_zeros', 'r_norm_direction_ones',
+                    'r_norm_mean_direction_zeros', 'r_norm_mean_direction_ones',
                     'h_true_norm_zeros', 'h_true_norm_ones',
                     'h_approx_norm_zeros', 'h_approx_norm_ones',
                     'h_true_norm_direction_zeros', 'h_true_norm_direction_ones',
@@ -112,6 +117,7 @@ for idx, out_of_dist_pct in enumerate(out_of_dist_pct_range):
     h_approx_norm = float(torch.norm(latent_approx, norm))
     residual_vectors = latent_true - latent_approx
     r_norm = float(torch.norm(residual_vectors, norm))
+    r_norm_mean = float(torch.mean(torch.norm(residual_vectors, norm, dim=1)))
     
     # Split by class
     latent_true_zeros = latent_true[labels_pred == 0]
@@ -123,22 +129,51 @@ for idx, out_of_dist_pct in enumerate(out_of_dist_pct_range):
     latent_approx_ones = latent_approx[labels_pred == 1]
     h_approx_norm_zeros = float(torch.norm(latent_approx_zeros, norm))
     h_approx_norm_ones = float(torch.norm(latent_approx_ones, norm))
-    
+
     zeros_norm_ratio = h_true_norm_zeros / h_approx_norm_zeros
     ones_norm_ratio = h_true_norm_ones / h_approx_norm_ones
 
-    # zeros are spread along the x-axis, so the noise axis is the y-axis.
-    noise_axis_zeros = int(torch.argmin(torch.std(latent_true_zeros, dim=0)))
-    noise_axis_ones = int(torch.argmin(torch.std(latent_true_ones, dim=0)))
+    residual_zeros = residual_vectors[labels_pred == 0]
+    residual_ones = residual_vectors[labels_pred == 1]
+
+    r_norm_zeros = float(torch.norm(residual_zeros, norm))
+    r_norm_ones = float(torch.norm(residual_ones, norm))
+    # r_norm_class = (r_norm_zeros + r_norm_ones) / 2
+
+    r_norm_mean_zeros = float(torch.mean(torch.norm(residual_zeros, norm, dim=1)))
+    r_norm_mean_ones = float(torch.mean(torch.norm(residual_ones, norm, dim=1)))
+    # r_norm_mean_class = (r_norm_mean_zeros + r_norm_mean_ones) / 2
+
+    # If zeros are spread along the x-axis, the noise axis is the y-axis.
+    num_dims = latent_true_zeros.shape[1]
+    max_noise_dim_zeros = int(torch.argmax(torch.std(latent_true_zeros, dim=0)))
+    max_noise_dim_ones = int(torch.argmax(torch.std(latent_true_ones, dim=0)))
+    noise_axis_zeros = [k for k in range(num_dims) if k != max_noise_dim_zeros]
+    noise_axis_ones = [k for k in range(num_dims) if k != max_noise_dim_ones]
+
     h_true_norm_direction_zeros = float(torch.norm(latent_true_zeros[:, noise_axis_zeros], norm))
     h_true_norm_direction_ones = float(torch.norm(latent_true_ones[:, noise_axis_ones], norm))
     h_approx_norm_direction_zeros = float(torch.norm(latent_approx_zeros[:, noise_axis_zeros], norm))
     h_approx_norm_direction_ones = float(torch.norm(latent_approx_ones[:, noise_axis_ones], norm))
 
+    r_norm_direction_zeros = float(torch.norm(residual_zeros[:, noise_axis_zeros], norm))
+    r_norm_direction_ones = float(torch.norm(residual_ones[:, noise_axis_ones], norm))
+    r_norm_mean_direction_zeros = float(torch.mean(torch.norm(residual_zeros[:, noise_axis_zeros], norm, dim=1)))
+    r_norm_mean_direction_ones = float(torch.mean(torch.norm(residual_ones[:, noise_axis_ones], norm, dim=1)))
+
     # Collect results
     distance_dict[out_of_dist_pct]['h_true_norm'] = h_true_norm
     distance_dict[out_of_dist_pct]['h_approx_norm'] = h_approx_norm
     distance_dict[out_of_dist_pct]['r_norm'] = r_norm
+    distance_dict[out_of_dist_pct]['r_norm_mean'] = r_norm_mean
+    distance_dict[out_of_dist_pct]['r_norm_zeros'] = r_norm_zeros
+    distance_dict[out_of_dist_pct]['r_norm_ones'] = r_norm_ones
+    distance_dict[out_of_dist_pct]['r_norm_mean_zeros'] = r_norm_mean_zeros
+    distance_dict[out_of_dist_pct]['r_norm_mean_ones'] = r_norm_mean_ones
+    distance_dict[out_of_dist_pct]['r_norm_direction_zeros'] = r_norm_direction_zeros
+    distance_dict[out_of_dist_pct]['r_norm_direction_ones'] = r_norm_direction_ones
+    distance_dict[out_of_dist_pct]['r_norm_mean_direction_zeros'] = r_norm_mean_direction_zeros
+    distance_dict[out_of_dist_pct]['r_norm_mean_direction_ones'] = r_norm_mean_direction_ones
     distance_dict[out_of_dist_pct]['h_true_norm_zeros'] = h_true_norm_zeros
     distance_dict[out_of_dist_pct]['h_true_norm_ones'] = h_true_norm_ones
     distance_dict[out_of_dist_pct]['h_approx_norm_zeros'] = h_approx_norm_zeros
@@ -162,15 +197,29 @@ distance_df['h_norm_direction_zeros_ratio'] = distance_df['h_true_norm_direction
 distance_df['h_norm_direction_ones_ratio'] = distance_df['h_true_norm_direction_ones'] / distance_df['h_approx_norm_direction_ones']
 distance_df['h_norm_direction_mean'] = (distance_df['h_norm_direction_zeros_ratio'] + distance_df['h_norm_direction_ones_ratio']) / 2
 
+distance_df['r_norm_class'] = (distance_df['r_norm_zeros'] + distance_df['r_norm_ones']) / 2
+distance_df['r_norm_mean_class'] = (distance_df['r_norm_mean_zeros'] + distance_df['r_norm_mean_ones']) / 2
+distance_df['r_norm_direction'] = (distance_df['r_norm_direction_zeros'] + distance_df['r_norm_direction_ones']) / 2
+distance_df['r_norm_direction_spread'] = distance_df['r_norm_direction_ones'] - distance_df['r_norm_direction_zeros']
+distance_df['r_norm_direction_ratio'] = (distance_df['r_norm_direction_ones'] / distance_df['r_norm_direction_zeros']) - 1
+distance_df['r_norm_mean_direction'] = (distance_df['r_norm_mean_direction_zeros'] + distance_df['r_norm_mean_direction_ones']) / 2
+
+
 distance_output_cols = ['h_norm_ratio',
                         'h_norm_zeros_ratio', 'h_norm_ones_ratio',
                         'h_norm_direction_zeros_ratio', 'h_norm_direction_ones_ratio',
                         'h_norm_class_mean', 'h_norm_direction_mean']
 
-
-
-distance_df[distance_output_cols].plot()
+# distance_df[distance_output_cols].plot()
 distance_df[['r_norm']].plot()
+distance_df[['r_norm_mean']].plot()
+
+distance_df[['r_norm_zeros', 'r_norm_ones', 'r_norm_class']].plot()
+distance_df[['r_norm_mean_zeros', 'r_norm_mean_ones', 'r_norm_mean_class']].plot()
+distance_df[['r_norm_direction_zeros', 'r_norm_direction_ones', 'r_norm_direction', 'r_norm_direction_spread']].plot()
+distance_df[['r_norm_mean_direction_zeros', 'r_norm_mean_direction_ones', 'r_norm_mean_direction']].plot()
+distance_df[['r_norm_direction_ratio']].plot()
+
 distance_df[['h_norm_ratio']].plot()
 distance_df[['h_norm_zeros_ratio', 'h_norm_ones_ratio', 'h_norm_class_mean']].plot()
 distance_df[['h_norm_direction_zeros_ratio', 'h_norm_direction_ones_ratio', 'h_norm_direction_mean']].plot()
