@@ -178,12 +178,3 @@ distance_df[['h_norm_direction_zeros_ratio', 'h_norm_direction_ones_ratio', 'h_n
 
 pd.options.display.max_columns = 10
 distance_df[distance_output_cols]
-
-
-# Re-run with simplex retrained at each step
-
-
-# Split by class and remove direction of least variation
-# plot_latent_space_2d(latent_true, labels_true, digits)
-# plot_latent_space_2d(latent_approx, labels_true, digits)
-# plot_latent_space_2d(latent_approx, labels_pred, digits)
