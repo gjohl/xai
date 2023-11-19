@@ -16,8 +16,11 @@ def run_and_save_results(model, output_fname, digits, num_samples):
     output_fpath = RESULTS_DIR / output_fname
     metrics_dict = run_multiple(model, digits, num_samples)
 
-    with open(output_fpath, 'wb') as handle:
-        pickle.dump(metrics_dict, handle, protocol=pickle.HIGHEST_PROTOCOL)
+    try:
+        with open(output_fpath, 'wb') as handle:
+            pickle.dump(metrics_dict, handle, protocol=pickle.HIGHEST_PROTOCOL)
+    except:
+        print("Failed to pickle metrics dict")
 
     return metrics_dict
 
