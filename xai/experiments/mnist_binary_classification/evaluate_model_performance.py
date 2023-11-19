@@ -28,7 +28,7 @@ def run_multiple(model, digits, num_samples):
                                                               shuffle=False,
                                                               train_validation_split=[0.8, 0.2])
     source_data, source_labels = next(iter(train_dl))
-    validation_data, validation_labels = next(iter(validation_dl))
+    # validation_data, validation_labels = next(iter(validation_dl))
 
     # Load varying tests sets, fit a simplex model to each, calculate distance and accuracy metrics
     # out_of_dist_pct_range = [k/20 for k in range(21)]
