@@ -1,8 +1,8 @@
 import pickle
+from simplexai.explainers.simplex import Simplex
 
 from xai.constants import RESULTS_DIR
 from xai.data_handlers.utils import load_training_data_mnist_binary, load_test_data_mnist_binary
-from xai.evaluation_metrics.distance import SimplexDistance
 from xai.evaluation_metrics.utils import DEFAULT_NORM
 from xai.experiments.utils import (
     model_accuracy_metrics, model_distance_metrics, get_count_per_digit
@@ -31,7 +31,14 @@ def run_multiple(model, digits, num_samples):
                                                               shuffle=False,
                                                               train_validation_split=[0.8, 0.2])
     source_data, source_labels = next(iter(train_dl))
-    # validation_data, validation_labels = next(iter(validation_dl))
+    validation_data, validation_labels = next(iter(validation_dl))
+
+    # Fit simplex on the validation data - used for relative measures
+    source_latents = model.latent_representation(source_data).detach()
+    validation_latents = model.latent_representation(validation_data).detach()
+    simplex = Simplex(corpus_examples=source_data, corpus_latent_reps=source_latents)
+    simplex.fit(test_examples=validation_data, test_latent_reps=validation_latents, reg_factor=0, n_epoch=10000)
+    validation_latents_approx = simplex.latent_approx()
 
     # Load varying tests sets, fit a simplex model to each, calculate distance and accuracy metrics
     out_of_dist_pct_range = [k/20 for k in range(21)]
@@ -45,8 +52,7 @@ def run_multiple(model, digits, num_samples):
         target_data, target_labels = next(iter(test_dl))
 
         # Calculate distance and accuracy metrics
-        simplex_dist = SimplexDistance(model, source_data, target_data)
-        distance_metrics = simplex_dist.distance_metrics(norm=DEFAULT_NORM)
+        distance_metrics = model_distance_metrics(model, source_data, target_data, validation_latents_approx, simplex, norm=DEFAULT_NORM)
         accuracy_metrics = model_accuracy_metrics(model, test_dl)
         results_dict = accuracy_metrics | distance_metrics  # Merge dicts into single result
 
