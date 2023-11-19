@@ -24,9 +24,11 @@ def model_distance_metrics(model, source_data, target_data, validation_latents_a
     labels_pred = (output_probs > 0.5) * 1
 
     # Latent space norm variants
-    h_norm_ratio, h_true_norm, h_approx_norm = calculate_h_norm(simplex_dist.target_latents, validation_latents_approx, norm)
-    h_norm_classwise, h_norm_zeros_ratio, h_norm_ones_ratio = calculate_h_norm_classwise(simplex_dist.target_latents, validation_latents_approx, labels_pred, norm)
-    h_norm_directionwise, h_norm_direction_zeros_ratio, h_norm_direction_ones_ratio = calculate_h_norm_directionwise(simplex_dist.target_latents, validation_latents_approx, labels_pred, norm)
+    num_target_data_instances = target_data.shape[0]
+    validation_latents_approx_filtered = validation_latents_approx[:num_target_data_instances]
+    h_norm_ratio, h_true_norm, h_approx_norm = calculate_h_norm(simplex_dist.target_latents, validation_latents_approx_filtered, norm)
+    h_norm_classwise, h_norm_zeros_ratio, h_norm_ones_ratio = calculate_h_norm_classwise(simplex_dist.target_latents, validation_latents_approx_filtered, labels_pred, norm)
+    h_norm_directionwise, h_norm_direction_zeros_ratio, h_norm_direction_ones_ratio = calculate_h_norm_directionwise(simplex_dist.target_latents, validation_latents_approx_filtered, labels_pred, norm)
 
     validation_data_results = {
         'validation_h_norm_ratio': h_norm_ratio,

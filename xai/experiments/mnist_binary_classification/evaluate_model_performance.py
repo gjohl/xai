@@ -52,7 +52,7 @@ def run_multiple(model, digits, num_samples):
         target_data, target_labels = next(iter(test_dl))
 
         # Calculate distance and accuracy metrics
-        distance_metrics = model_distance_metrics(model, source_data, target_data, validation_latents_approx, simplex, norm=DEFAULT_NORM)
+        distance_metrics = model_distance_metrics(model, source_data, target_data, validation_latents_approx, norm=DEFAULT_NORM, simplex=None)
         accuracy_metrics = model_accuracy_metrics(model, test_dl)
         results_dict = accuracy_metrics | distance_metrics  # Merge dicts into single result
 
