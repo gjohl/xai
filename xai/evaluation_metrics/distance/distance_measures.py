@@ -13,13 +13,24 @@ def calculate_r_norm(latent_true: torch.Tensor,
     return float(torch.norm(residual_vectors, norm))
     
     
-def calculate_r_norm_vectorwise(latent_true: torch.Tensor,
+def calculate_r_vectorwise_norm(latent_true: torch.Tensor,
                                 latent_approx: torch.Tensor,
                                 norm: int = DEFAULT_NORM) -> float:
     """Calculate the norm of each residual vector, then average these over all instances."""
     residual_vectors = latent_true - latent_approx
     return float(torch.mean(torch.norm(residual_vectors, norm, dim=1)))
 
+
+def calculate_r_norm_class(latent_true: torch.Tensor,
+                           latent_approx: torch.Tensor,
+                           norm: int = DEFAULT_NORM) -> float:
+    residual_zeros = residual_vectors[labels_pred == 0]
+    residual_ones = residual_vectors[labels_pred == 1]
+
+    r_norm_zeros = float(torch.norm(residual_zeros, norm))
+    r_norm_ones = float(torch.norm(residual_ones, norm))
+    # r_norm_class = (r_norm_zeros + r_norm_ones) / 2
+    pass
 
 def calculate_h_norm(latent_true: torch.Tensor,
                      latent_approx: torch.Tensor,
@@ -43,8 +54,7 @@ def calculate_h_norm_classwise(latent_true: torch.Tensor,
     h_norm_ones_ratio = h_true_norm_ones / h_approx_norm_ones
 
     # Calculate a weighted mean of the two, weighted by the proportion of instances with that label
-    zeros_fraction = float(sum(labels_pred == 0) / labels_pred.shape[0])
-    ones_fraction = float(sum(labels_pred == 1) / labels_pred.shape[0])
+    zeros_fraction, ones_fraction = class_proportions(labels_pred)
     h_norm_classwise = (zeros_fraction * h_norm_zeros_ratio) + (ones_fraction * h_norm_ones_ratio)
 
     return h_norm_classwise, h_norm_zeros_ratio, h_norm_ones_ratio
@@ -79,8 +89,17 @@ def calculate_h_norm_directionwise(latent_true: torch.Tensor,
     h_norm_direction_ones_ratio = h_true_norm_direction_ones / h_approx_norm_direction_ones
 
     # Calculate a weighted mean of the two, weighted by the proportion of instances with that label
-    zeros_fraction = float(sum(labels_pred == 0) / labels_pred.shape[0])
-    ones_fraction = float(sum(labels_pred == 1) / labels_pred.shape[0])
+    zeros_fraction, ones_fraction = class_proportions(labels_pred)
     h_norm_directionwise = (zeros_fraction * h_norm_direction_zeros_ratio) + (ones_fraction * h_norm_direction_ones_ratio)
 
     return h_norm_directionwise, h_norm_direction_zeros_ratio, h_norm_direction_ones_ratio
+
+
+def class_proportions(labels: torch.Tensor) -> Tuple[float, float]:
+    """Calculate the proportion of negative and positive classifications in the labels."""
+    zeros_fraction = float(sum(labels == 0) / labels.shape[0])
+    ones_fraction = float(sum(labels == 1) / labels.shape[0])
+    return zeros_fraction, ones_fraction
+
+
+
