@@ -52,7 +52,6 @@ validation_data, validation_labels = next(iter(validation_dl))
 source_latents = model.latent_representation(source_data).detach()
 validation_latents = model.latent_representation(validation_data).detach()
 simplex = Simplex(corpus_examples=source_data, corpus_latent_reps=source_latents)
-simplex.fit(test_examples=validation_data, test_latent_reps=validation_latents, reg_factor=0, n_epoch=10000)
 
 # Results
 latent_true_dict = {}
@@ -61,7 +60,7 @@ labels_true_dict = {}
 labels_pred_dict = {}
 model_prob_dict = {}
 
-out_of_dist_pct_range = [k / 20 for k in range(21)]
+out_of_dist_pct_range = [k / 10 for k in range(11)]
 for idx, out_of_dist_pct in enumerate(out_of_dist_pct_range):
     print(f"Running metrics for {idx + 1} of {len(out_of_dist_pct_range)}")
     # Load test data
@@ -69,12 +68,15 @@ for idx, out_of_dist_pct in enumerate(out_of_dist_pct_range):
     test_dl = load_test_data_mnist_binary(batch_size=BATCH_SIZE, shuffle=True,
                                           digits=digits, count_per_digit=count_per_digit)
     target_data, target_labels = next(iter(test_dl))
+    target_latents = model.latent_representation(target_data).detach()
 
     # Model predictions
     output_probs = model.probabilities(target_data)[:, 1].detach()
     predicted_classes = (output_probs > 0.5) * 1
 
     # Collect results
+    simplex.fit(test_examples=target_data, test_latent_reps=target_latents, reg_factor=0, n_epoch=10000)
+
     latent_true_dict[out_of_dist_pct] = model.latent_representation(target_data).detach()
     latent_approx_dict[out_of_dist_pct] = simplex.latent_approx()
     labels_true_dict[out_of_dist_pct] = target_labels
@@ -86,7 +88,6 @@ for idx, out_of_dist_pct in enumerate(out_of_dist_pct_range):
 # Experiment with different combinations and aggregations of features #
 #######################################################################
 # Derived inputs to distance
-out_of_dist_pct = 0.0
 norm = 2
 
 distance_dict = {}
@@ -227,3 +228,26 @@ distance_df[['h_norm_direction_zeros_ratio', 'h_norm_direction_ones_ratio', 'h_n
 
 pd.options.display.max_columns = 10
 distance_df[distance_output_cols]
+
+# pickle results
+results_fpath = RESULTS_DIR / 'distance_investigation'
+
+objects_to_save = [latent_true_dict,
+                   latent_approx_dict,
+                   labels_true_dict,
+                   labels_pred_dict,
+                   model_prob_dict,
+                   distance_dict]
+fnames = ['latent_true_dict',
+          'latent_approx_dict',
+          'labels_true_dict',
+          'labels_pred_dict',
+          'model_prob_dict',
+          'distance_dict']
+
+for obj_to_save, fname_to_save in zip(objects_to_save, fnames):
+    print(f"Saving: {fname_to_save}")
+
+    with open(results_fpath / fname_to_save, 'wb') as handle:
+        pickle.dump(obj_to_save, handle, protocol=pickle.HIGHEST_PROTOCOL)
+
