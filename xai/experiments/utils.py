@@ -1,6 +1,7 @@
 import torch
 
-from xai.evaluation_metrics.distance import SimplexDistance, LatentPointwiseDistance, LatentApproxDistance
+from xai.evaluation_metrics.distance import SimplexDistance, LatentPointwiseDistance, LatentApproxDistance, DEFAULT_NORM
+
 from xai.evaluation_metrics.performance import calculate_accuracy_metrics
 
 
@@ -11,18 +12,9 @@ def model_accuracy_metrics(model, test_dl):
     return metrics
 
 
-def model_distance_metrics(model, source_data, target_data, simplex):
-    distance_dict = {}
+def model_distance_metrics(model, source_data, target_data, simplex, norm=DEFAULT_NORM):
     simplex_dist = SimplexDistance(model, source_data, target_data, simplex)
-    latent_pw_dist = LatentPointwiseDistance(model, source_data, target_data)
-    latent_approx_dist = LatentApproxDistance(model, source_data, target_data)
-
-    distance_dict['simplex'] = simplex_dist.distance()
-    distance_dict['latent_pointwise'] = latent_pw_dist.distance()
-    distance_dict['latent_approx'] = latent_approx_dist.distance()
-    distance_dict['latent_approx_unscaled'] = float(torch.sqrt(torch.sum(latent_approx_dist._distance_per_point ** 2)))
-
-    return distance_dict
+    return simplex_dist.distance_metrics(norm=norm)
 
 
 def calculate_model_predictions(model, test_dl):
