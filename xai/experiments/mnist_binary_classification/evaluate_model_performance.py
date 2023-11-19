@@ -31,8 +31,7 @@ def run_multiple(model, digits, num_samples):
     # validation_data, validation_labels = next(iter(validation_dl))
 
     # Load varying tests sets, fit a simplex model to each, calculate distance and accuracy metrics
-    # out_of_dist_pct_range = [k/20 for k in range(21)]
-    out_of_dist_pct_range = [k / 5 for k in range(6)]
+    out_of_dist_pct_range = [k/20 for k in range(21)]
     metrics_dict = {}
     for idx, out_of_dist_pct in enumerate(out_of_dist_pct_range):
         print(f"Running metrics for {idx+1} of {len(out_of_dist_pct_range)}")

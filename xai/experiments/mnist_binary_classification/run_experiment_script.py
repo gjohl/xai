@@ -9,6 +9,7 @@ from xai.experiments.mnist_binary_classification.plot_utils import plot_accuracy
 ########################
 # Experiment variables #
 ########################
+run_number = 1
 digits = (0, 1, 2,)
 num_samples = 50
 
@@ -22,7 +23,7 @@ model.load(MODEL_DIR / model_fname)
 #########################
 # Save and plot results #
 #########################
-output_fname = f"mnist_extrapolation_{''.join([str(digit) for digit in digits])}_{num_samples}_revised.pkl"
+output_fname = f"mnist_experiment/{''.join([str(digit) for digit in digits])}_{num_samples}_run_{run_number}.pkl"
 metrics_dict = run_and_save_results(model, output_fname, digits, num_samples)
 df = pd.DataFrame(metrics_dict).T
 plot_accuracy_distance(df)
