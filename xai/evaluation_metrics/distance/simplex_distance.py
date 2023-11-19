@@ -2,7 +2,7 @@ import torch
 from simplexai.explainers.simplex import Simplex
 
 from xai.evaluation_metrics.distance.base import BaseDistance
-from xai.evaluation_metrics.distance.distance_measures import calculate_distance_metrics
+from xai.evaluation_metrics.distance.distance_measures import calculate_distance_metrics, DEFAULT_NORM
 
 
 class SimplexDistance(BaseDistance):
@@ -27,7 +27,7 @@ class SimplexDistance(BaseDistance):
         super().__init__(model, source_data, target_data)
         self.simplex = simplex
 
-    def distance_metrics(self) -> dict:
+    def distance_metrics(self, norm: int = DEFAULT_NORM) -> dict:
         """Calculate various distance metrics"""
         if self.simplex is None:
             self._fit_simplex()
