@@ -1,7 +1,7 @@
 import torch
 import pytest
 
-from xai.evaluation_metrics.distance.distance_measures import class_proportions
+from xai.evaluation_metrics.utils import class_proportions
 
 
 @pytest.mark.parametrize("labels, expected_zeros_fraction, expected_ones_fraction", [
