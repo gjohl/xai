@@ -9,7 +9,6 @@ from xai.experiments.mnist_binary_classification.plot_utils import plot_accuracy
 ########################
 # Experiment variables #
 ########################
-run_number = 1
 digits = (0, 1, 2,)
 num_samples = 80
 
