@@ -39,7 +39,7 @@ class SimplexDistance(BaseDistance):
         # Simplex approximation
         target_latents_approx = self.simplex.latent_approx()
 
-        return calculate_distance_metrics(self.target_latents, target_latents_approx, labels_pred)
+        return calculate_distance_metrics(self.target_latents, target_latents_approx, labels_pred, norm=norm)
 
     def distance(self):
         """float: Simplex distance based on the residual."""
