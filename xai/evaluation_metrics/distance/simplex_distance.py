@@ -2,7 +2,8 @@ import torch
 from simplexai.explainers.simplex import Simplex
 
 from xai.evaluation_metrics.distance.base import BaseDistance
-from xai.evaluation_metrics.distance.distance_measures import calculate_distance_metrics, DEFAULT_NORM
+from xai.evaluation_metrics.distance.distance_measures import calculate_distance_metrics
+from xai.evaluation_metrics.utils import DEFAULT_NORM
 
 
 class SimplexDistance(BaseDistance):

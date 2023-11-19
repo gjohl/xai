@@ -1,6 +1,7 @@
 import torch
 
-from xai.evaluation_metrics.distance import SimplexDistance, LatentPointwiseDistance, LatentApproxDistance, DEFAULT_NORM
+from xai.evaluation_metrics.distance import SimplexDistance, LatentPointwiseDistance, LatentApproxDistance
+from xai.evaluation_metrics.utils import DEFAULT_NORM
 
 from xai.evaluation_metrics.performance import calculate_accuracy_metrics
 

@@ -2,7 +2,7 @@ from typing import Tuple, Dict
 
 import torch
 
-DEFAULT_NORM = 2
+from xai.evaluation_metrics.utils import class_proportions, calculate_norm, DEFAULT_NORM
 
 
 def calculate_distance_metrics(latent_true: torch.Tensor,
@@ -68,7 +68,7 @@ def calculate_r_norm(latent_true: torch.Tensor,
                      norm: int = DEFAULT_NORM) -> float:
     """Calculate the norm of the residual tensor."""
     residual_vectors = latent_true - latent_approx
-    return calculate_residual_norm(residual_vectors, vectorwise, norm)
+    return calculate_norm(residual_vectors, vectorwise, norm)
 
 
 def calculate_r_norm_classwise(latent_true: torch.Tensor,
@@ -84,8 +84,8 @@ def calculate_r_norm_classwise(latent_true: torch.Tensor,
 
     # Calculate norms
     zeros_fraction, ones_fraction = class_proportions(labels_pred)
-    r_norm_zeros = calculate_residual_norm(residual_zeros, vectorwise, norm)
-    r_norm_ones = calculate_residual_norm(residual_ones, vectorwise, norm)
+    r_norm_zeros = calculate_norm(residual_zeros, vectorwise, norm)
+    r_norm_ones = calculate_norm(residual_ones, vectorwise, norm)
     r_norm_classwise = (zeros_fraction * r_norm_zeros) + (ones_fraction * r_norm_ones)
 
     return r_norm_classwise, r_norm_zeros, r_norm_ones
@@ -115,8 +115,8 @@ def calculate_r_norm_directionwise(latent_true: torch.Tensor,
 
     # Calculate the class- and direction-specific norms
     zeros_fraction, ones_fraction = class_proportions(labels_pred)
-    r_norm_direction_zeros = calculate_residual_norm(residual_zeros[:, noise_axis_zeros], vectorwise, norm)
-    r_norm_direction_ones = calculate_residual_norm(residual_ones[:, noise_axis_ones], vectorwise, norm)
+    r_norm_direction_zeros = calculate_norm(residual_zeros[:, noise_axis_zeros], vectorwise, norm)
+    r_norm_direction_ones = calculate_norm(residual_ones[:, noise_axis_ones], vectorwise, norm)
     r_norm_directionwise = (zeros_fraction * r_norm_direction_zeros) + (ones_fraction * r_norm_direction_ones)
 
     return r_norm_directionwise, r_norm_direction_zeros, r_norm_direction_ones
@@ -186,25 +186,3 @@ def calculate_h_norm_directionwise(latent_true: torch.Tensor,
     h_norm_directionwise = (zeros_fraction * h_norm_direction_zeros_ratio) + (ones_fraction * h_norm_direction_ones_ratio)
 
     return h_norm_directionwise, h_norm_direction_zeros_ratio, h_norm_direction_ones_ratio
-
-
-#########
-# Utils #
-#########
-def class_proportions(labels: torch.Tensor) -> Tuple[float, float]:
-    """Calculate the proportion of negative and positive classifications in the labels."""
-    zeros_fraction = float(sum(labels == 0) / labels.shape[0])
-    ones_fraction = float(sum(labels == 1) / labels.shape[0])
-    return zeros_fraction, ones_fraction
-
-
-def calculate_residual_norm(residual_vectors: torch.Tensor,
-                            vectorwise: bool = False,
-                            norm: int = DEFAULT_NORM) -> float:
-    """Convenience function to switch between norm calculation methods."""
-    if vectorwise:
-        # Calculate the norm of each residual vector, then average these over all instances
-        return float(torch.mean(torch.norm(residual_vectors, norm, dim=1)))
-    else:
-        # Calculate the norm over the whole tensor
-        return float(torch.norm(residual_vectors, norm))
