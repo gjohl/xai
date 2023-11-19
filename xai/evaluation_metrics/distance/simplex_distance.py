@@ -2,6 +2,7 @@ import torch
 from simplexai.explainers.simplex import Simplex
 
 from xai.evaluation_metrics.distance.base import BaseDistance
+from xai.evaluation_metrics.distance.distance_measures import calculate_distance_metrics
 
 
 class SimplexDistance(BaseDistance):
@@ -25,6 +26,20 @@ class SimplexDistance(BaseDistance):
         """
         super().__init__(model, source_data, target_data)
         self.simplex = simplex
+
+    def distance_metrics(self) -> dict:
+        """Calculate various distance metrics"""
+        if self.simplex is None:
+            self._fit_simplex()
+
+        # Model predictions
+        output_probs = self.model.probabilities(self.target_data)[:, 1].detach()
+        labels_pred = (output_probs > 0.5) * 1
+
+        # Simplex approximation
+        target_latents_approx = self.simplex.latent_approx()
+
+        return calculate_distance_metrics(self.target_latents, target_latents_approx, labels_pred)
 
     def distance(self):
         """float: Simplex distance based on the residual."""
