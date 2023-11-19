@@ -23,7 +23,11 @@ model.load(MODEL_DIR / model_fname)
 #########################
 # Save and plot results #
 #########################
-output_fname = f"mnist_experiment/{''.join([str(digit) for digit in digits])}_{num_samples}_run_{run_number}.pkl"
-metrics_dict = run_and_save_results(model, output_fname, digits, num_samples)
+for run_number in range(1, 11):
+    print(f"RUN NUMBER {run_number}------------------------------")
+    output_fname = f"mnist_experiment/{''.join([str(digit) for digit in digits])}_{num_samples}_run_{run_number}.pkl"
+    metrics_dict = run_and_save_results(model, output_fname, digits, num_samples)
+
+
 df = pd.DataFrame(metrics_dict).T
 # plot_accuracy_distance(df)
