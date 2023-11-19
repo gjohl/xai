@@ -1,8 +1,65 @@
-from typing import Tuple
+from typing import Tuple, Dict
 
 import torch
 
 DEFAULT_NORM = 2
+
+
+def calculate_distance_metrics(latent_true: torch.Tensor,
+                               latent_approx: torch.Tensor,
+                               labels_pred: torch.Tensor,
+                               norm: int = DEFAULT_NORM) -> Dict:
+    # Residual norm variants
+    r_norm = calculate_r_norm(latent_true, latent_approx, vectorwise=False, norm=norm)
+    r_vectorwise_norm = calculate_r_norm(latent_true, latent_approx, vectorwise=True, norm=norm)
+    r_norm_classwise, r_norm_zeros, r_norm_ones = calculate_r_norm_classwise(
+        latent_true, latent_approx, labels_pred, vectorwise=False, norm=norm
+    )
+    r_vectorwise_norm_classwise, r_vectorwise_norm_zeros, r_vectorwise_norm_ones = calculate_r_norm_classwise(
+        latent_true, latent_approx, labels_pred, vectorwise=True, norm=norm
+    )
+    r_norm_directionwise, r_norm_direction_zeros, r_norm_direction_ones = calculate_r_norm_directionwise(
+        latent_true, latent_approx, labels_pred, vectorwise=False, norm=norm
+    )
+    r_vector_norm_directionwise, r_vector_norm_direction_zeros, r_vector_norm_direction_ones = calculate_r_norm_directionwise(  # noqa
+        latent_true, latent_approx, labels_pred, vectorwise=True, norm=norm
+    )
+
+    # Latent space norm variants
+    h_norm_ratio, h_true_norm, h_approx_norm = calculate_h_norm(latent_true, latent_approx, norm)
+    h_norm_classwise, h_norm_zeros_ratio, h_norm_ones_ratio = calculate_h_norm_classwise(latent_true, latent_approx, labels_pred, norm)
+    h_norm_directionwise, h_norm_direction_zeros_ratio, h_norm_direction_ones_ratio = calculate_h_norm_directionwise(latent_true, latent_approx, labels_pred, norm)
+
+    # Collect results
+    distance_results = {
+        # Residual
+        'r_norm': r_norm,
+        'r_vectorwise_norm': r_vectorwise_norm,
+        'r_norm_classwise': r_norm_classwise,
+        'r_norm_zeros': r_norm_zeros, 
+        'r_norm_ones': r_norm_ones,
+        'r_vectorwise_norm_classwise': r_vectorwise_norm_classwise,
+        'r_vectorwise_norm_zeros': r_vectorwise_norm_zeros,
+        'r_vectorwise_norm_ones': r_vectorwise_norm_ones,
+        'r_norm_directionwise': r_norm_directionwise,
+        'r_norm_direction_zeros': r_norm_direction_zeros,
+        'r_norm_direction_ones': r_norm_direction_ones,
+        'r_vector_norm_directionwise': r_vector_norm_directionwise,
+        'r_vector_norm_direction_zeros': r_vector_norm_direction_zeros,
+        'r_vector_norm_direction_ones': r_vector_norm_direction_ones,
+        # Latent space
+        'h_norm_ratio': h_norm_ratio,
+        'h_true_norm': h_true_norm,
+        'h_approx_norm': h_approx_norm,
+        'h_norm_classwise': h_norm_classwise,
+        'h_norm_zeros_ratio': h_norm_zeros_ratio,
+        'h_norm_ones_ratio': h_norm_ones_ratio,
+        'h_norm_directionwise': h_norm_directionwise,
+        'h_norm_direction_zeros_ratio': h_norm_direction_zeros_ratio,
+        'h_norm_direction_ones_ratio': h_norm_direction_ones_ratio,
+    }
+
+    return distance_results
 
 
 def calculate_r_norm(latent_true: torch.Tensor,
@@ -151,5 +208,3 @@ def calculate_residual_norm(residual_vectors: torch.Tensor,
     else:
         # Calculate the norm over the whole tensor
         return float(torch.norm(residual_vectors, norm))
-
-
