@@ -9,5 +9,5 @@ MODEL_DIR = BASE_DIR / 'xai' / 'models' / 'saved_models'
 RESULTS_DIR = BASE_DIR / 'xai' / 'experiments' / 'results'
 FIGURES_DIR = BASE_DIR / 'xai' / 'experiments' / 'report_figures'
 
-# THis is a big dataset so stored outside the repo
+# This is a big dataset so stored outside the repo
 CANCER_DATA_DIR = Path("/home/gurp/Documents/phdprep/research_task/selected_dataset/lung_colon_image_set")
