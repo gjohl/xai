@@ -10,12 +10,12 @@ from xai.evaluation_metrics.utils import DEFAULT_NORM
 from xai.experiments.utils import model_distance_metrics
 
 
-BATCH_SIZE = 128
+BATCH_SIZE = 256
 
 
-def run_and_save_results(model, output_fname, digits, num_samples):
+def run_and_save_results(model, output_fname, num_samples):
     output_fpath = RESULTS_DIR / 'cancer_experiment' / output_fname
-    metrics_dict = run_multiple(model, digits, num_samples)
+    metrics_dict = run_multiple(model, num_samples)
 
     try:
         with open(output_fpath, 'wb') as handle:
@@ -40,8 +40,6 @@ def run_multiple(model, num_samples):
 
     source_data, source_labels = next(iter(training_data_loader))
     validation_data, validation_labels = next(iter(validation_data_loader))
-    test_lung_data, test_lung_labels = next(iter(test_lung_data_loader))
-    test_colon_data, test_colon_labels = next(iter(test_colon_data_loader))
 
     # Fit simplex on the validation data - used for relative measures
     source_latents = model.latent_representation(source_data).detach()
@@ -51,11 +49,14 @@ def run_multiple(model, num_samples):
     validation_latents_approx = simplex.latent_approx()
 
     # Load varying tests sets, fit a simplex model to each, calculate distance and accuracy metrics
-    out_of_dist_pct_range = [k/20 for k in range(21)]
+    out_of_dist_pct_range = [k/10 for k in range(11)]
     metrics_dict = {}
     for idx, out_of_dist_pct in enumerate(out_of_dist_pct_range):
         print(f"Running metrics for {idx+1} of {len(out_of_dist_pct_range)}")
         # Load test data
+        test_lung_data, test_lung_labels = next(iter(test_lung_data_loader))
+        test_colon_data, test_colon_labels = next(iter(test_colon_data_loader))
+
         count_per_body_part = get_count_per_body_part(num_samples, out_of_dist_pct)
         target_data, target_labels = combine_test_data(test_lung_data, test_lung_labels,
                                                        test_colon_data, test_colon_labels,
