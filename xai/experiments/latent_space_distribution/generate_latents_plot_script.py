@@ -58,9 +58,19 @@ plt.savefig(FIGURES_DIR / latent_plot_fname, format='png')
 #######################
 # Plot residual shift #
 #######################
-residual_plot_fname = "residual_shift_2d.png"
+residual_shift_plot_fname = "residual_shift_2d.png"
 sd = SimplexDistance(model, source_data, test_data_digits)
 sd.distance()
 latents_approx = sd.simplex.latent_approx()
 plot_latent_shift(latents, latents_approx, labels_digits, digits, keep_n=n)
+plt.savefig(FIGURES_DIR / residual_shift_plot_fname, format='png')
+
+
+##################
+# Plot residuals #
+##################
+residual_plot_fname = "residuals_2d.png"
+
+residuals = latents - latents_approx
+plot_latent_space_2d(residuals, labels_digits, digits)
 plt.savefig(FIGURES_DIR / residual_plot_fname, format='png')
