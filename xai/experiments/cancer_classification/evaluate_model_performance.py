@@ -1,15 +1,17 @@
 import pickle
 from simplexai.explainers.simplex import Simplex
+import torch
+from torch.utils.data import DataLoader
 
 from xai.constants import RESULTS_DIR
-from xai.data_handlers.utils import load_training_data_mnist_binary, load_test_data_mnist_binary
+from xai.data_handlers.lung_colon_images import load_cancer_dataset
 from xai.evaluation_metrics.utils import DEFAULT_NORM
 from xai.experiments.utils import (
     model_accuracy_metrics, model_distance_metrics, get_count_per_digit
 )
 
 
-BATCH_SIZE = 1024
+BATCH_SIZE = 128
 
 
 def run_and_save_results(model, output_fname, digits, num_samples):
@@ -25,13 +27,22 @@ def run_and_save_results(model, output_fname, digits, num_samples):
     return metrics_dict
 
 
-def run_multiple(model, digits, num_samples):
-    # Load source data
-    train_dl, validation_dl = load_training_data_mnist_binary(batch_size=BATCH_SIZE,
-                                                              shuffle=False,
-                                                              train_validation_split=[0.8, 0.2])
-    source_data, source_labels = next(iter(train_dl))
-    validation_data, validation_labels = next(iter(validation_dl))
+def run_multiple(model, num_samples):
+    # Load data
+    training_dataset = load_cancer_dataset('lung', 'train')
+    validation_dataset = load_cancer_dataset('lung', 'validation')
+    test_dataset_lung = load_cancer_dataset('lung', 'test')
+    test_dataset_colon = load_cancer_dataset('colon', 'test')
+
+    training_data_loader = DataLoader(training_dataset, batch_size=BATCH_SIZE, shuffle=True)
+    validation_data_loader = DataLoader(validation_dataset, batch_size=BATCH_SIZE, shuffle=True)
+    test_lung_data_loader = DataLoader(test_dataset_lung, batch_size=BATCH_SIZE, shuffle=True)
+    test_colon_data_loader = DataLoader(test_dataset_colon, batch_size=BATCH_SIZE, shuffle=True)
+
+    source_data, source_labels = next(iter(training_data_loader))
+    validation_data, validation_labels = next(iter(validation_data_loader))
+    test_lung_data, test_lung_labels = next(iter(test_lung_data_loader))
+    test_colon_data, test_colon_labels = next(iter(test_colon_data_loader))
 
     # Fit simplex on the validation data - used for relative measures
     source_latents = model.latent_representation(source_data).detach()
@@ -46,10 +57,11 @@ def run_multiple(model, digits, num_samples):
     for idx, out_of_dist_pct in enumerate(out_of_dist_pct_range):
         print(f"Running metrics for {idx+1} of {len(out_of_dist_pct_range)}")
         # Load test data
-        count_per_digit = get_count_per_digit(digits, num_samples, out_of_dist_pct)
-        test_dl = load_test_data_mnist_binary(batch_size=BATCH_SIZE, shuffle=True,
-                                              digits=digits, count_per_digit=count_per_digit)
-        target_data, target_labels = next(iter(test_dl))
+        count_per_body_part = get_count_per_body_part(num_samples, out_of_dist_pct)
+        target_data, target_labels = combine_test_data(test_lung_data, test_lung_labels,
+                                                       test_colon_data, test_colon_labels,
+                                                       count_per_body_part)
+
 
         # Calculate distance and accuracy metrics
         distance_metrics = model_distance_metrics(model, source_data, target_data, validation_latents_approx, norm=DEFAULT_NORM, simplex=None)
@@ -59,3 +71,21 @@ def run_multiple(model, digits, num_samples):
         metrics_dict[out_of_dist_pct] = results_dict
 
     return metrics_dict
+
+
+def get_count_per_body_part(num_samples, out_of_dist_pct):
+    # The count for 0 and 1 are determined completely by num_samples_per_class and out_of_dist_pct
+    out_of_dist_num_samples = int(num_samples * out_of_dist_pct)
+    return {
+        'lung': num_samples - out_of_dist_num_samples,
+        'colon': out_of_dist_num_samples
+    }
+
+
+def combine_test_data(test_lung_data, test_lung_labels, test_colon_data, test_colon_labels, count_per_body_part):
+    target_data = torch.cat([test_lung_data[:count_per_body_part['lung']],
+                             test_colon_data[:count_per_body_part['colon']]])
+    target_labels = torch.cat([test_lung_labels[:count_per_body_part['lung']],
+                               test_colon_labels[:count_per_body_part['colon']]])
+
+    return target_data, target_labels

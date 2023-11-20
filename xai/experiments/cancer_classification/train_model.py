@@ -7,7 +7,7 @@ from xai.models.cancer_classifier_cnn import CancerCNNClassifier
 from xai.models.training.learner import Learner
 
 BATCH_SIZE = 64
-model_output_filename = "cancer_cnn_run_1.pth"
+model_output_filename = "cancer_cnn_run_2.pth"
 
 
 #######################
