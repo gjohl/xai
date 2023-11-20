@@ -82,4 +82,4 @@ fig = plot_ood_results_with_error_bars(mean_df, std_df, ['probability_std'], "Pr
 fig = plot_ood_results_with_error_bars(mean_df, std_df, ['r_vectorwise_norm', 'r_vector_norm_directionwise'], "Residual norm")
 fig = plot_ood_results_with_error_bars(mean_df, std_df, ['h_true_norm', 'h_approx_norm'], "Latent space norm")
 fig = plot_ood_results_with_error_bars(mean_df, std_df, ['validation_h_norm_ratio', 'validation_h_norm_classwise'], "Relative latent space norm")
-fig = plot_ood_results_with_error_bars(mean_df, std_df, ['validation_h_norm_directionwise'], "Relative latent space norm in out-of-plave axis")
+fig = plot_ood_results_with_error_bars(mean_df, std_df, ['validation_h_norm_directionwise'], "Relative latent space norm in out-of-plane axis")

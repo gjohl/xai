@@ -8,7 +8,7 @@ from xai.experiments.cancer_classification.evaluate_model_performance import run
 ########################
 # Experiment variables #
 ########################
-num_samples = 200
+num_samples = 100
 
 
 ##############
