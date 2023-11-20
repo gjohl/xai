@@ -113,7 +113,7 @@ def calculate_r_norm_directionwise(latent_true: torch.Tensor,
     if validation_latent_approx:
         # Use the validation set to identify the noise axis if available
         reference_zeros = validation_latent_approx[labels_pred == 0]
-        reference_ones = validation_latent_approx[labels_pred == 0]
+        reference_ones = validation_latent_approx[labels_pred == 1]
     else:
         reference_zeros = latent_true_zeros
         reference_ones = latent_true_ones
