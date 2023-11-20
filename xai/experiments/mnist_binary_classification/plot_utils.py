@@ -23,3 +23,20 @@ def plot_accuracy_distance(df: pd.DataFrame) -> plt.Figure:
     fig.tight_layout()  # otherwise the right y-label is slightly clipped
     plt.show()
     return fig
+
+
+def plot_ood_results_with_error_bars(mean_df: pd.DataFrame,
+                                     std_df: pd.DataFrame,
+                                     cols: list,
+                                     ylabel: str):
+    """Plot the given columns against out-of-distribution, with error bars."""
+    fig = plt.figure()
+    for col in cols:
+        plt.plot(mean_df.index, mean_df[col], label=col)
+        plt.fill_between(mean_df.index, mean_df[col] - std_df[col], mean_df[col] + std_df[col], alpha=0.2)
+
+        plt.xlabel("Out-of-distribution proportion")
+        plt.ylabel(ylabel)
+
+    plt.legend()
+    return fig
