@@ -110,7 +110,7 @@ def calculate_r_norm_directionwise(latent_true: torch.Tensor,
     # Similar for higher dimensions, if the zeros are spread in the X-Y plane, the noise axis is the z-axis.
     # We check the true latents, and the axis with the SMALLEST standard deviation is noise.
     # The larger spreads are true distinctions made by the model.
-    if validation_latent_approx:
+    if validation_latent_approx is not None:
         # Use the validation set to identify the noise axis if available
         reference_zeros = validation_latent_approx[labels_pred == 0]
         reference_ones = validation_latent_approx[labels_pred == 1]
