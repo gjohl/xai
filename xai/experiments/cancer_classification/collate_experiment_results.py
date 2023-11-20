@@ -34,8 +34,8 @@ plt.savefig(CANCER_FIGURES_DIR / 'relative_h_norm.png', format='png')
 
 # TODO GJ: Fix bug and recheck
 # Residual directionwise
-fig = plot_ood_results_with_error_bars(mean_df, std_df, ['r_norm_directionwise'], "Residual norm")
-fig = plot_ood_results_with_error_bars(mean_df, std_df, ['r_vector_norm_directionwise'], "Residual norm")
+fig = plot_ood_results_with_error_bars(mean_df, std_df, ['r_norm_directionwise'], "Residual norm in out-of-plane axis")
+fig = plot_ood_results_with_error_bars(mean_df, std_df, ['r_vector_norm_directionwise'], "Residual norm in out-of-plane axis")
 
 # Relative norm directionwise
 fig = plot_ood_results_with_error_bars(mean_df, std_df, ['validation_h_norm_directionwise'], "Relative latent space norm in out-of-plane axis")
