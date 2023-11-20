@@ -1,6 +1,6 @@
 import torch
 
-from xai.evaluation_metrics.distance import SimplexDistance, LatentPointwiseDistance, LatentApproxDistance
+from xai.evaluation_metrics.distance import SimplexDistance
 from xai.evaluation_metrics.distance.distance_measures import calculate_h_norm, calculate_h_norm_classwise, calculate_h_norm_directionwise
 from xai.evaluation_metrics.utils import DEFAULT_NORM
 

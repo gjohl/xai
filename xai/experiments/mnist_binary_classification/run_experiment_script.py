@@ -1,9 +1,8 @@
 import pandas as pd
 
 from xai.constants import MODEL_DIR
-from xai.models.simple_cnn import CNNBinaryClassifier, CNNBinaryClassifier2D
+from xai.models.simple_cnn import CNNBinaryClassifier2D
 from xai.experiments.mnist_binary_classification.evaluate_model_performance import run_and_save_results
-from xai.experiments.mnist_binary_classification.plot_utils import plot_accuracy_distance
 
 
 ########################
@@ -29,4 +28,3 @@ for run_number in range(1, 11):
 
 
 df = pd.DataFrame(metrics_dict).T
-# plot_accuracy_distance(df)
