@@ -5,10 +5,9 @@ from torch.utils.data import DataLoader
 
 from xai.constants import RESULTS_DIR
 from xai.data_handlers.lung_colon_images import load_cancer_dataset
+from xai.evaluation_metrics.performance import calculate_accuracy_metrics
 from xai.evaluation_metrics.utils import DEFAULT_NORM
-from xai.experiments.utils import (
-    model_accuracy_metrics, model_distance_metrics, get_count_per_digit
-)
+from xai.experiments.utils import model_distance_metrics
 
 
 BATCH_SIZE = 128
@@ -62,10 +61,10 @@ def run_multiple(model, num_samples):
                                                        test_colon_data, test_colon_labels,
                                                        count_per_body_part)
 
-
         # Calculate distance and accuracy metrics
-        distance_metrics = model_distance_metrics(model, source_data, target_data, validation_latents_approx, norm=DEFAULT_NORM, simplex=None)
-        accuracy_metrics = model_accuracy_metrics(model, test_dl)
+        distance_metrics = model_distance_metrics(model, source_data, target_data, validation_latents_approx,
+                                                  norm=DEFAULT_NORM, simplex=None)
+        accuracy_metrics = model_accuracy_metrics(model, target_data, target_labels)
         results_dict = accuracy_metrics | distance_metrics  # Merge dicts into single result
 
         metrics_dict[out_of_dist_pct] = results_dict
@@ -89,3 +88,11 @@ def combine_test_data(test_lung_data, test_lung_labels, test_colon_data, test_co
                                test_colon_labels[:count_per_body_part['colon']]])
 
     return target_data, target_labels
+
+
+def model_accuracy_metrics(model, target_data, target_labels):
+    """Evaluate the model metrics for a given test set."""
+    output_probs = model.probabilities(target_data)[:, 1].detach()
+    predicted_classes = (output_probs > 0.5) * 1
+    metrics = calculate_accuracy_metrics(target_labels, predicted_classes, output_probs)
+    return metrics
