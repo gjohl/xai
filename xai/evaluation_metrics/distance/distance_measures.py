@@ -110,13 +110,13 @@ def calculate_r_norm_directionwise(latent_true: torch.Tensor,
     num_dims = latent_true_zeros.shape[1]
     max_noise_dim_zeros = int(torch.argmax(torch.std(latent_true_zeros, dim=0)))
     max_noise_dim_ones = int(torch.argmax(torch.std(latent_true_ones, dim=0)))
-    noise_axis_zeros = [k for k in range(num_dims) if k != max_noise_dim_zeros]
-    noise_axis_ones = [k for k in range(num_dims) if k != max_noise_dim_ones]
+    # noise_axis_zeros = [k for k in range(num_dims) if k != max_noise_dim_zeros]
+    # noise_axis_ones = [k for k in range(num_dims) if k != max_noise_dim_ones]
 
     # Calculate the class- and direction-specific norms
     zeros_fraction, ones_fraction = class_proportions(labels_pred)
-    r_norm_direction_zeros = calculate_norm(residual_zeros[:, noise_axis_zeros], vectorwise, norm)
-    r_norm_direction_ones = calculate_norm(residual_ones[:, noise_axis_ones], vectorwise, norm)
+    r_norm_direction_zeros = calculate_norm(residual_zeros[:, max_noise_dim_zeros], vectorwise, norm)
+    r_norm_direction_ones = calculate_norm(residual_ones[:, max_noise_dim_ones], vectorwise, norm)
     r_norm_directionwise = (zeros_fraction * r_norm_direction_zeros) + (ones_fraction * r_norm_direction_ones)
 
     return r_norm_directionwise, r_norm_direction_zeros, r_norm_direction_ones
@@ -169,14 +169,14 @@ def calculate_h_norm_directionwise(latent_true: torch.Tensor,
     num_dims = latent_true_zeros.shape[1]
     max_noise_dim_zeros = int(torch.argmax(torch.std(latent_true_zeros, dim=0)))
     max_noise_dim_ones = int(torch.argmax(torch.std(latent_true_ones, dim=0)))
-    noise_axis_zeros = [k for k in range(num_dims) if k != max_noise_dim_zeros]
-    noise_axis_ones = [k for k in range(num_dims) if k != max_noise_dim_ones]
+    # noise_axis_zeros = [k for k in range(num_dims) if k != max_noise_dim_zeros]
+    # noise_axis_ones = [k for k in range(num_dims) if k != max_noise_dim_ones]
 
     # Calculate the class- and direction-specific norms
-    h_true_norm_direction_zeros = float(torch.norm(latent_true_zeros[:, noise_axis_zeros], norm))
-    h_true_norm_direction_ones = float(torch.norm(latent_true_ones[:, noise_axis_ones], norm))
-    h_approx_norm_direction_zeros = float(torch.norm(latent_approx_zeros[:, noise_axis_zeros], norm))
-    h_approx_norm_direction_ones = float(torch.norm(latent_approx_ones[:, noise_axis_ones], norm))
+    h_true_norm_direction_zeros = float(torch.norm(latent_true_zeros[:, max_noise_dim_zeros], norm))
+    h_true_norm_direction_ones = float(torch.norm(latent_true_ones[:, max_noise_dim_ones], norm))
+    h_approx_norm_direction_zeros = float(torch.norm(latent_approx_zeros[:, max_noise_dim_zeros], norm))
+    h_approx_norm_direction_ones = float(torch.norm(latent_approx_ones[:, max_noise_dim_ones], norm))
 
     h_norm_direction_zeros_ratio = h_true_norm_direction_zeros / h_approx_norm_direction_zeros
     h_norm_direction_ones_ratio = h_true_norm_direction_ones / h_approx_norm_direction_ones
