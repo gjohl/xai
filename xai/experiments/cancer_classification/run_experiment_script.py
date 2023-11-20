@@ -14,7 +14,7 @@ num_samples = 200
 ##############
 # Load model #
 ##############
-model_fname = 'cancer_cnn_run_2.pth'
+model_fname = 'cancer_cnn_run_3.pth'
 model = CancerCNNClassifier()
 model.load(MODEL_DIR / model_fname)
 
