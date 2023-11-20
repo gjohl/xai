@@ -73,7 +73,6 @@ def run_multiple(model, num_samples):
 
 
 def get_count_per_body_part(num_samples, out_of_dist_pct):
-    # The count for 0 and 1 are determined completely by num_samples_per_class and out_of_dist_pct
     out_of_dist_num_samples = int(num_samples * out_of_dist_pct)
     return {
         'lung': num_samples - out_of_dist_num_samples,
