@@ -1,3 +1,6 @@
+import os
+import pickle
+
 import matplotlib.pyplot as plt
 import pandas as pd
 
@@ -40,3 +43,27 @@ def plot_ood_results_with_error_bars(mean_df: pd.DataFrame,
 
     plt.legend()
     return fig
+
+
+def collate_experiment_results(results_dir: str):
+    """Calculate the mean and standard deviation of the results DataFrame across all experiment runs."""
+    # Load data
+    results_df_list = []
+    for result_fname in os.listdir(results_dir):
+        with open(os.path.join(results_dir, result_fname), 'rb') as handle:
+            metrics_dict = pickle.load(handle)
+            results_df_list.append(pd.DataFrame(metrics_dict).T)
+
+    # Calc mean and std of each column
+    df = results_df_list[0]
+    result_cols = df.columns
+
+    mean_df = pd.DataFrame(index=df.index)
+    std_df = pd.DataFrame(index=df.index)
+
+    for col in result_cols:
+        col_df = pd.concat([df[col] for df in results_df_list], axis=1)
+        mean_df[col] = col_df.mean(axis=1)
+        std_df[col] = col_df.std(axis=1)
+
+    return mean_df, std_df
