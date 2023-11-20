@@ -8,13 +8,13 @@ from xai.experiments.cancer_classification.evaluate_model_performance import run
 ########################
 # Experiment variables #
 ########################
-num_samples = 100
+num_samples = 200
 
 
 ##############
 # Load model #
 ##############
-model_fname = 'cancer_cnn_run_1.pth'
+model_fname = 'cancer_cnn_run_2.pth'
 model = CancerCNNClassifier()
 model.load(MODEL_DIR / model_fname)
 
