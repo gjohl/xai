@@ -24,7 +24,7 @@ model.load(MODEL_DIR / model_fname)
 #########################
 for run_number in range(1, 11):
     print(f"RUN NUMBER {run_number}------------------------------")
-    output_fname = f"{num_samples}_run_{run_number}.pkl"
+    output_fname = f"cancer_experiment_2/{num_samples}_run_{run_number}.pkl"
     metrics_dict = run_and_save_results(model, output_fname, num_samples)
 
 
