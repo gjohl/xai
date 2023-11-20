@@ -9,7 +9,6 @@ from xai.experiments.mnist_binary_classification.plot_utils import plot_accuracy
 ########################
 # Experiment variables #
 ########################
-run_number = 1
 digits = (0, 1, 2,)
 num_samples = 80
 
@@ -25,7 +24,7 @@ model.load(MODEL_DIR / model_fname)
 #########################
 for run_number in range(1, 11):
     print(f"RUN NUMBER {run_number}------------------------------")
-    output_fname = f"mnist_experiment/{''.join([str(digit) for digit in digits])}_{num_samples}_run_{run_number}.pkl"
+    output_fname = f"mnist_experiment_2/{''.join([str(digit) for digit in digits])}_{num_samples}_run_{run_number}.pkl"
     metrics_dict = run_and_save_results(model, output_fname, digits, num_samples)
 
 
