@@ -2,7 +2,7 @@ import torch
 from torch.nn.modules.loss import CrossEntropyLoss
 
 from xai.data_handlers.utils import load_training_data_mnist_binary
-from xai.models.training import Learner, calculate_one_epoch, DEFAULT_OPTIMIZER, DEFAULT_OPTIMIZER_KWARGS
+from xai.models.training.learner import Learner, calculate_one_epoch, DEFAULT_OPTIMIZER, DEFAULT_OPTIMIZER_KWARGS
 from xai.models.simple_cnn import CNNBinaryClassifier
 
 
