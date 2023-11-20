@@ -3,7 +3,7 @@ from torch.utils.data import DataLoader
 from xai.constants import MODEL_DIR
 from xai.data_handlers.utils import load_training_data_mnist_binary
 from xai.models.simple_cnn import BaseModel
-from xai.models.training import Learner
+from xai.models.training.learner import Learner
 
 
 def run_model_training(

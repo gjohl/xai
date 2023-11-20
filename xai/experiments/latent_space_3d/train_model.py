@@ -1,5 +1,5 @@
 from xai.models.simple_cnn import CNNBinaryClassifier3D
-from xai.experiments.model_training.train_binary_classifier import run_model_training
+from xai.models.training.train_binary_classifier import run_model_training
 
 
 model = CNNBinaryClassifier3D()
