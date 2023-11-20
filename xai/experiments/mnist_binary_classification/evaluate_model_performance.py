@@ -41,7 +41,7 @@ def run_multiple(model, digits, num_samples):
     validation_latents_approx = simplex.latent_approx()
 
     # Load varying tests sets, fit a simplex model to each, calculate distance and accuracy metrics
-    out_of_dist_pct_range = [k/20 for k in range(21)]
+    out_of_dist_pct_range = [k / 20 for k in range(21)]
     metrics_dict = {}
     for idx, out_of_dist_pct in enumerate(out_of_dist_pct_range):
         print(f"Running metrics for {idx+1} of {len(out_of_dist_pct_range)}")
