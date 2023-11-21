@@ -42,13 +42,8 @@ fig = plot_ood_results_with_error_bars(mean_df, std_df, ['validation_h_norm_dire
 plt.savefig(MNIST_FIGURES_DIR / 'relative_h_norm_directionwise.png', format='png')
 
 
-
-# TODO GJ: Fix bug and recheck
-# Residual directionwise
+# Unused
 fig = plot_ood_results_with_error_bars(mean_df, std_df, ['r_norm_directionwise'], "Residual norm in out-of-plane axis")
 fig = plot_ood_results_with_error_bars(mean_df, std_df, ['r_vector_norm_directionwise'], "Residual norm in out-of-plane axis")
 fig = plot_ood_results_with_error_bars(mean_df, std_df, ['validation_r_norm_directionwise'], "Residual norm in out-of-plane axis")
 fig = plot_ood_results_with_error_bars(mean_df, std_df, ['validation_r_vector_norm_directionwise'], "Residual norm in out-of-plane axis")
-
-plt.close()
-
