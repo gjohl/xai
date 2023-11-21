@@ -37,4 +37,4 @@ for ax, input_data in zip(axs.flat, test_data_digits_reshaped):
     ax.imshow(input_data[0]*-1, cmap='gist_gray')
 fig.tight_layout()
 
-plt.savefig(FIGURES_DIR / OUTPUT_FNAME, format='png')
+plt.savefig(FIGURES_DIR / OUTPUT_FNAME, format='png', bbox_inches='tight')
