@@ -10,7 +10,7 @@ from xai.experiments.latent_space_distribution.plot_utils import get_data_and_la
 DIGITS = (0, 1, 2,)
 NUM_INSTANCES = 2
 BATCH_SIZE = 128
-OUTPUT_FNAME = "mnist_digits.png"
+OUTPUT_FNAME = "mnist_experiment/mnist_digits.png"
 
 
 #############
