@@ -1,7 +1,10 @@
 import torch
 
-from xai.evaluation_metrics.distance import SimplexDistance, LatentPointwiseDistance, LatentApproxDistance
-from xai.evaluation_metrics.distance.distance_measures import calculate_h_norm, calculate_h_norm_classwise, calculate_h_norm_directionwise
+from xai.evaluation_metrics.distance import SimplexDistance
+from xai.evaluation_metrics.distance.distance_measures import (
+    calculate_h_norm, calculate_h_norm_classwise, calculate_h_norm_directionwise,
+    calculate_r_norm_directionwise
+)
 from xai.evaluation_metrics.utils import DEFAULT_NORM
 
 from xai.evaluation_metrics.performance import calculate_accuracy_metrics
@@ -30,6 +33,16 @@ def model_distance_metrics(model, source_data, target_data, validation_latents_a
     h_norm_classwise, h_norm_zeros_ratio, h_norm_ones_ratio = calculate_h_norm_classwise(simplex_dist.target_latents, validation_latents_approx_filtered, labels_pred, norm)
     h_norm_directionwise, h_norm_direction_zeros_ratio, h_norm_direction_ones_ratio = calculate_h_norm_directionwise(simplex_dist.target_latents, validation_latents_approx_filtered, labels_pred, norm)
 
+    # Residual out of plane
+    r_norm_directionwise, r_norm_direction_zeros, r_norm_direction_ones = calculate_r_norm_directionwise(
+        simplex_dist.target_latents, simplex_dist.simplex.latent_approx(), labels_pred,
+        validation_latent_approx=validation_latents_approx_filtered, vectorwise=False, norm=norm
+    )
+    r_vector_norm_directionwise, r_vector_norm_direction_zeros, r_vector_norm_direction_ones = calculate_r_norm_directionwise(
+        simplex_dist.target_latents, simplex_dist.simplex.latent_approx(), labels_pred,
+        validation_latent_approx=validation_latents_approx_filtered, vectorwise=True, norm=norm
+    )
+
     validation_data_results = {
         'validation_h_norm_ratio': h_norm_ratio,
         'validation_h_true_norm': h_true_norm,
@@ -40,6 +53,12 @@ def model_distance_metrics(model, source_data, target_data, validation_latents_a
         'validation_h_norm_directionwise': h_norm_directionwise,
         'validation_h_norm_direction_zeros_ratio': h_norm_direction_zeros_ratio,
         'validation_h_norm_direction_ones_ratio': h_norm_direction_ones_ratio,
+        'validation_r_norm_directionwise': r_norm_directionwise,
+        'validation_r_norm_direction_zeros': r_norm_direction_zeros,
+        'validation_r_norm_direction_ones': r_norm_direction_ones,
+        'validation_r_vector_norm_directionwise': r_vector_norm_directionwise,
+        'validation_r_vector_norm_direction_zeros': r_vector_norm_direction_zeros,
+        'validation_r_vector_norm_direction_ones': r_vector_norm_direction_ones,
     }
 
     return test_data_results | validation_data_results  # Merge dicts into single result

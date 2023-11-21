@@ -94,6 +94,7 @@ def calculate_r_norm_classwise(latent_true: torch.Tensor,
 def calculate_r_norm_directionwise(latent_true: torch.Tensor,
                                    latent_approx: torch.Tensor,
                                    labels_pred: torch.Tensor,
+                                   validation_latent_approx=None,
                                    vectorwise: bool = False,
                                    norm: int = DEFAULT_NORM) -> Tuple[float, float, float]:
     """Calculate norms of residual tensor per predicted class in the direction of the noise axis."""
@@ -107,16 +108,23 @@ def calculate_r_norm_directionwise(latent_true: torch.Tensor,
     # Select the noise axis.
     # If zeros are spread along the x-axis, the noise axis is the y-axis.
     # Similar for higher dimensions, if the zeros are spread in the X-Y plane, the noise axis is the z-axis.
-    num_dims = latent_true_zeros.shape[1]
-    max_noise_dim_zeros = int(torch.argmax(torch.std(latent_true_zeros, dim=0)))
-    max_noise_dim_ones = int(torch.argmax(torch.std(latent_true_ones, dim=0)))
-    # noise_axis_zeros = [k for k in range(num_dims) if k != max_noise_dim_zeros]
-    # noise_axis_ones = [k for k in range(num_dims) if k != max_noise_dim_ones]
+    # We check the true latents, and the axis with the SMALLEST standard deviation is noise.
+    # The larger spreads are true distinctions made by the model.
+    if validation_latent_approx is not None:
+        # Use the validation set to identify the noise axis if available
+        reference_zeros = validation_latent_approx[labels_pred == 0]
+        reference_ones = validation_latent_approx[labels_pred == 1]
+    else:
+        reference_zeros = latent_true_zeros
+        reference_ones = latent_true_ones
+
+    noise_dim_zeros = [int(torch.argmin(torch.std(reference_zeros, dim=0)))]
+    noise_dim_ones = [int(torch.argmin(torch.std(reference_ones, dim=0)))]
 
     # Calculate the class- and direction-specific norms
     zeros_fraction, ones_fraction = class_proportions(labels_pred)
-    r_norm_direction_zeros = calculate_norm(residual_zeros[:, max_noise_dim_zeros], vectorwise, norm)
-    r_norm_direction_ones = calculate_norm(residual_ones[:, max_noise_dim_ones], vectorwise, norm)
+    r_norm_direction_zeros = calculate_norm(residual_zeros[:, noise_dim_zeros], vectorwise, norm)
+    r_norm_direction_ones = calculate_norm(residual_ones[:, noise_dim_ones], vectorwise, norm)
     r_norm_directionwise = (zeros_fraction * r_norm_direction_zeros) + (ones_fraction * r_norm_direction_ones)
 
     return r_norm_directionwise, r_norm_direction_zeros, r_norm_direction_ones
@@ -166,17 +174,16 @@ def calculate_h_norm_directionwise(latent_true: torch.Tensor,
     # Select the noise axis.
     # If zeros are spread along the x-axis, the noise axis is the y-axis.
     # Similar for higher dimensions, if the zeros are spread in the X-Y plane, the noise axis is the z-axis.
-    num_dims = latent_true_zeros.shape[1]
-    max_noise_dim_zeros = int(torch.argmax(torch.std(latent_true_zeros, dim=0)))
-    max_noise_dim_ones = int(torch.argmax(torch.std(latent_true_ones, dim=0)))
-    # noise_axis_zeros = [k for k in range(num_dims) if k != max_noise_dim_zeros]
-    # noise_axis_ones = [k for k in range(num_dims) if k != max_noise_dim_ones]
+    # We check the true latents, and the axis with the SMALLEST standard deviation is noise.
+    # The larger spreads are true distinctions made by the model.
+    noise_dim_zeros = [int(torch.argmin(torch.std(latent_approx_zeros, dim=0)))]
+    noise_dim_ones = [int(torch.argmin(torch.std(latent_approx_ones, dim=0)))]
 
     # Calculate the class- and direction-specific norms
-    h_true_norm_direction_zeros = float(torch.norm(latent_true_zeros[:, max_noise_dim_zeros], norm))
-    h_true_norm_direction_ones = float(torch.norm(latent_true_ones[:, max_noise_dim_ones], norm))
-    h_approx_norm_direction_zeros = float(torch.norm(latent_approx_zeros[:, max_noise_dim_zeros], norm))
-    h_approx_norm_direction_ones = float(torch.norm(latent_approx_ones[:, max_noise_dim_ones], norm))
+    h_true_norm_direction_zeros = float(torch.norm(latent_true_zeros[:, noise_dim_zeros], norm))
+    h_true_norm_direction_ones = float(torch.norm(latent_true_ones[:, noise_dim_ones], norm))
+    h_approx_norm_direction_zeros = float(torch.norm(latent_approx_zeros[:, noise_dim_zeros], norm))
+    h_approx_norm_direction_ones = float(torch.norm(latent_approx_ones[:, noise_dim_ones], norm))
 
     h_norm_direction_zeros_ratio = h_true_norm_direction_zeros / h_approx_norm_direction_zeros
     h_norm_direction_ones_ratio = h_true_norm_direction_ones / h_approx_norm_direction_ones
