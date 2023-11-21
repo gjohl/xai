@@ -35,5 +35,6 @@ test_data_digits_reshaped = test_data_digits[[0, 2, 4, 1, 3, 5]]
 fig, axs = plt.subplots(2, 3, sharex=True, sharey=True, subplot_kw={'xticks': [], 'yticks': []})
 for ax, input_data in zip(axs.flat, test_data_digits_reshaped):
     ax.imshow(input_data[0]*-1, cmap='gist_gray')
+fig.tight_layout()
 
 plt.savefig(FIGURES_DIR / OUTPUT_FNAME, format='png')

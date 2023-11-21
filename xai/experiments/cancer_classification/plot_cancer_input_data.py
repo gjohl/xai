@@ -50,5 +50,5 @@ plt.imshow(test_data_images[0])
 fig, axs = plt.subplots(2, 4, sharex=True, sharey=True, subplot_kw={'xticks': [], 'yticks': []})
 for ax, input_data in zip(axs.flat, test_data_images):
     ax.imshow(input_data)
-
+fig.tight_layout()
 plt.savefig(FIGURES_DIR / OUTPUT_FNAME, format='png')
