@@ -10,7 +10,7 @@ from xai.experiments.latent_space_distribution.plot_utils import get_data_and_la
 DIGITS = (0, 1, 2,)
 NUM_INSTANCES = 2
 BATCH_SIZE = 128
-OUTPUT_FNAME = "mnist_digits.png"
+OUTPUT_FNAME = "mnist_experiment/mnist_digits.png"
 
 
 #############
@@ -35,5 +35,6 @@ test_data_digits_reshaped = test_data_digits[[0, 2, 4, 1, 3, 5]]
 fig, axs = plt.subplots(2, 3, sharex=True, sharey=True, subplot_kw={'xticks': [], 'yticks': []})
 for ax, input_data in zip(axs.flat, test_data_digits_reshaped):
     ax.imshow(input_data[0]*-1, cmap='gist_gray')
+fig.tight_layout()
 
-plt.savefig(FIGURES_DIR / OUTPUT_FNAME, format='png')
+plt.savefig(FIGURES_DIR / OUTPUT_FNAME, format='png', bbox_inches='tight')
