@@ -36,11 +36,12 @@
 \usepackage{graphicx}
 \usepackage{bm}
 \usepackage{caption}
+\usepackage{subcaption}
 
 \graphicspath{ {./images/} }
 
 
-\title{Quantifying a Global Measure of Credibility Using the Simplex Method}
+\title{Quantifying a Global Measure of Confidence Using the Simplex Method}
 
 
 % The \author macro works with any number of authors. There are two commands
@@ -87,45 +88,45 @@
 
 \begin{abstract}
 Understanding when a model is appropriate for a given data set is a key consideration when deploying ML models in practice, but this is not straightforward.
-Accuracy on a test data set is often used for this purpose, but this does not take into account the confidence in those predictions; a model may be extrapolating far beyond the bounds of its training set and still achieve reasonable accuracy.
+Accuracy on a test data set is often used for this purpose, although it does not take into account the confidence in those predictions; a model may be extrapolating far beyond the bounds of its training set and still achieve reasonable accuracy.
 This is especially true when data sets are limited in size---by testing multiple models one may find a model with high test accuracy by luck.
-Simplex provides a method to explain a given test example in terms of a corpus of examples. This paper extends the Simplex approach to provide a single global value that answers the question "How much the model needed to extrapolate in order to arrive at these outputs for this data set?"
+Simplex provides a method to explain a given test example in terms of a corpus of examples. This paper extends the Simplex approach to provide a single global value that answers the question "How much did the model extrapolate in order to arrive at these outputs for this data set?"
 which can serve as a measure of confidence in the model for the given setting.
-If a model achieves good accuracy but with a high degree of extrapolation, we may want to be wary of this when using the results in practice.
-This gives practitioners another perspective of the applicability of a model for their data set.
-This paper proposes possible formulations of such a distance measure and illustrates the use case in a medical application.
+If a model achieves good accuracy but with a high degree of extrapolation, we may want to exercise caution when using the results in practice.
+This gives practitioners another perspective on the applicability of a model for their data set.
+This paper proposes possible formulations of such a distance measure and illustrates their use in a medical application.
 \end{abstract}
 
 
 
 \section{Introduction}
 
-A key consideration when applying machine learning models in real-world settings is model evaluation---how do we choose the best model and how confident can we be in its outputs? This is an open question, with practitioners relying on heuristics and judgement based on a number of accuracy and confidence measures\cite{ding_model_2018}\cite{raschka_model_2020}.
-This is particularly relevant in settings such as healthcare because data is often limited and the impact of decisions based on these models is significant. Having a better understanding of the applicability of a model for a given task, including its strengths and limitations, can help to reduce negative outcomes caused by spurious predictions and biases against groups underrepresented in the training data, thus improving health inequality.
+A key consideration when applying machine learning models in real-world settings is model evaluation---how do we choose the best model and how confident can we be in its outputs? But this is an open question, with practitioners relying on heuristics and judgement based on a number of accuracy and confidence measures\cite{ding_model_2018}\cite{raschka_model_2020}.
+In healthcare settings, this is a particularly important consideration because data is often limited and the impact of decisions based on these models is significant. Having a better understanding of the applicability of a model for a given task, including its strengths and limitations, can help to reduce negative outcomes caused by spurious predictions and biases against groups underrepresented in the training data, thus improving health inequality.
 
 The Simplex approach \cite{crabbe_explaining_2021} can be used to explain individual predictions of a particular model in terms of either examples or features. A particular application of this explored in the original paper is to identify examples from a different distribution using the residuals of the latent approximation, in effect measuring the degree of extrapolation required by the model in order to classify a particular instance.
 
-This research aims to extend this method by aggregating this concept over the test data set, to provide a global quantification of the degree of extrapolation. For a given data set, to what extent does a particular model need to extrapolate beyond the data it was trained on? Intuitively, we may want to be more sceptical of models with a high degree of extrapolation, so this effectively provides a measure of confidence. This scenario is investigated with a real-world application in Section \ref{sec:cancer results}---given a cancer detection image classification model which, unbeknownst to us, has only been trained on images of lungs, can we identify when the model is operating outside of its circle of competence? This can guide practitioners in cases where extra caution should be exercised when following the model's outputs, even when the accuracy is high.
+In this paper, we aim to extend this method by aggregating this concept over the test data set, to provide a global quantification of the degree of extrapolation. For a given data set, to what extent does a particular model need to extrapolate beyond the data it was trained on? Intuitively, we may want to be more sceptical of models with a high degree of extrapolation, so this effectively provides a measure of confidence.
+A real-world example of this question is investigated in Section \ref{sec:cancer results}---given a cancer detection image classification model which, unbeknownst to us, has only been trained on images of lungs, can we identify when the model is operating outside of its circle of competence? A measure of extrapolation could highlight where extra caution should be exercised when following the model's outputs, even when the accuracy is high.
 
-This has implications in model selection, transfer learning and data-centric AI among others. The benefit of such a confidence measure is that the same Simplex methodology can be used as an end-to-end solution for identifying and addressing issues with data and models---the global confidence measure can be used to identify suboptimal model-data combinations, and this can then be understood in terms of both features and examples in order to rectify any issues.
+This has implications in model selection, transfer learning and data-centric AI among others. The benefit of such a confidence measure is that the same Simplex methodology can be used as an end-to-end solution for identifying and addressing issues with data and models---the global confidence measure can be used to identify suboptimal model-data combinations, which can then be understood at a more detailed level in terms of both features and examples in order to rectify any issues.
 
 
 \paragraph{Related works}
 
-The concept of latent space distances as a measure of interpretability is used in the Deep k-Nearest approach \cite{papernot_deep_2018} and this is applied in the context of confidence and credibility. Confidence is defined as "how likely the prediction is to be correct according to the model’s training set", while credibility quantifies "how relevant the training set is to make this prediction". The distance measures presented hereafter provide a measure of extrapolation which may therefore fit the definition of credibility more closely than confidence, although these are closely coupled. Distinguishing between confidence or credibility is not the focus of this work, so these terms will be used interchangeably hereafter. The importance of an extrapolation measure was noted in the context of the Deep KNN approach: “When one wishes to deploy ML in settings where safety or security are critical, it becomes necessary to invent mechanisms suitable to identify when the model is extrapolating too much from the representations it has built with its training data.”
+The concept of latent space distances as a measure of interpretability is used in the \textit{Deep k-Nearest Neighbours} (Deep KNN) approach \cite{papernot_deep_2018} where it is applied in the context of confidence and credibility. Confidence is defined as "how likely the prediction is to be correct according to the model’s training set", while credibility quantifies "how relevant the training set is to make this prediction" \cite[p.7]{papernot_deep_2018}. The distance measures presented hereafter provide a measure of extrapolation which may therefore fit the definition of credibility more closely than confidence, although these are closely coupled. Distinguishing between confidence or credibility is not the focus of this work and confidence is used more widely in related literature, so these terms will be used interchangeably hereafter. The importance of an extrapolation measure was noted in the context of the Deep KNN approach: “when one wishes to deploy ML in settings where safety or security are critical, it becomes necessary to invent mechanisms suitable to identify when the model is extrapolating too much from the representations it has built with its training data.”\cite[p.5]{papernot_deep_2018}
 
-The idea of a single scalar value encapsulating the interpretability of a model is discussed as a desired attribute in the context of \textit{Concept Activation Vectors} \cite{kim_interpretability_2018}, where "plug-in readiness" and "global quantification" are explicit goals of the research. A measure based on the Simplex residuals has the former, by virtue of being a post-hoc explainability technique. This work focuses on extending Simplex to provide a "global quantification" measure of confidence.
+The idea of a single scalar value encapsulating the interpretability of a model is discussed as a desired attribute in the context of \textit{Concept Activation Vectors}, where "plug-in readiness" and "global quantification" are explicit goals of the research \cite[p.2]{kim_interpretability_2018}. A measure based on the Simplex residuals has the former, by virtue of being a post-hoc explainability technique. In this paper, we focus on extending Simplex to provide a "global quantification" measure of confidence.
 
 Various evaluation measures are discussed by Ding et al. \cite{ding_model_2018} While these primarily focus on the model's performance on a given task rather than interpretability or confidence, we later discuss possible avenues of future research that more closely align accuracy and confidence measures, as illustrated in Figure \ref{explainability_loop}.
 The relative importance assigned to performance and confidence measures when selecting between models is subjective. Rechkemmer and Yin observed that respondents claimed to base decisions on confidence but in fact follow the model with the highest accuracy, suggesting that model selection choices are often based on accuracy metrics and justified after the fact using confidence metrics \cite{rechkemmer_when_2022}.
 
-The concept of a single global measure based on the amount a model must extrapolate bears similarities to discussions of a transferability metric in the context of foundational models and transfer learning \cite{zhuang_comprehensive_2021} \cite{weber_transfer_2021} \cite{pan_survey_2010}. This is an open question in the field; the ideas presented here may help to bridge the gap between transferability and explainability. This idea is discussed further in Section \ref{sec:transfer learning}.
+The concept of a single global measure based on model extrapolation bears similarities to discussions of a transferability metric in the context of foundational models and transfer learning \cite{zhuang_comprehensive_2021} \cite{weber_transfer_2021} \cite{pan_survey_2010}. This is an open question in the field; the ideas presented here may help to bridge the gap between transferability and explainability, which is discussed further in Section \ref{sec:transfer learning}.
 
 
 \paragraph{Contribution}
-In this work, different distance measures based on the Simplex approach are explored which can serve as a confidence measure for a given model applied to a particular data set.
-This aligns it with other interpretability methods such as Deep k-Nearest Neighbours.
-By using Simplex as the foundation, this retains the benefits of Simplex as an interpretability method, such allowing a user-defined corpus corpus. By aggregating it as a global measure, it means that the same methodology can be used to interrogate data either as a whole data set, in terms of its examples, or in terms of its features.
+In this work, we explore different distance measures based on the Simplex approach, to act as a confidence measure for a given model applied to a particular data set, thereby aligning Simplex with other interpretability methods such as Deep KNN.
+By using Simplex as the foundation, this measure retains the benefits of Simplex as an interpretability method, namely, allowing a user-defined corpus. By aggregating it as a global measure, the same methodology can be used to interrogate data either as a whole data set, in terms of its examples, or in terms of its features.
 
 
 
@@ -134,7 +135,7 @@ By using Simplex as the foundation, this retains the benefits of Simplex as an i
 The similarity between training data and test data can be suboptimal in practice. It can be difficult to identify when a model is operating outside of its intended limits, as the predicted classifications may still be correct.
 This is particularly important when sample sizes are small, as is often the case in healthcare settings, because accuracy and traditional tests of significance can be misleading when evaluating multiple models \cite{harvey_multiple_2013}. A measure of extrapolation can help provide a more robust measure of a model's appropriateness in a given setting.
 
-Specifically, we consider the scenario where we have a model $M$ trained on data $\bm{D_{train}}$ and we want to determine how appropriate it is for the same task on an unseen data set $\bm{D_{test}}$. Intuitively, global confidence $k$ should depend on all three of these
+Specifically, we consider the scenario where we have a model $M$ trained on data $\bm{D_{train}}$ and we want to determine how appropriate it is for the same task on an unseen data set $\bm{D_{test}}$. Intuitively, global confidence $k$ should depend on all three of these:
 
 \begin{equation}\label{general_confidence_form}
 	k = f(M, \bm{D_{train}}, \bm{D_{test}})
@@ -142,22 +143,37 @@ Specifically, we consider the scenario where we have a model $M$ trained on data
 
 It is also noted that if $k$ has consistent scaling across models and data sets, then it can also be used to distinguish between competing models ${M_1, ..., M_m}$.
 
-The Simplex approach can be used to explain a given test instance in terms of a corpus of examples $C$. The extension proposed in this paper focuses on three key insights of the original method: (1) the behaviour of a model $M$ on an instance $\bm{d_{test_i}} \in \bm{D_{test}}$ can understood better in latent space than input space, i.e. using its latent representation $\bm{h_{test_i}}$ produced by the model's last hidden layer, (2) an approximation of this latent representation $\bm{\tilde{h}_{test_i}}$  can be defined in terms of a user-defined corpus of examples $C$, and (3) the residual $\bm{r_{test_i}} = ||\bm{h_{test_i}} - \bm{\tilde{h}_{test_i}}||_2$ can identify cases where the input $\bm{d_{test_i}}$ differs from $C$.
+The Simplex approach can be used to explain a given test instance in terms of a corpus of examples $C$. The extension proposed in this paper focuses on three key insights of the original method: (1) the behaviour of a model $M$ on an instance $\bm{d_{test_i}} \in \bm{D_{test}}$ can understood better in latent space than input space, i.e. using its latent representation $\bm{h_{test_i}}$ produced by the model's last hidden layer, (2) an approximation of this latent representation $\bm{\tilde{h}_{test_i}}$  can be defined in terms of a user-selected corpus of examples $C$, and (3) the residual $\bm{r_{test_i}} = ||\bm{h_{test_i}} - \bm{\tilde{h}_{test_i}}||_2$ can identify cases where the input $\bm{d_{test_i}}$ differs from $C$.
 
-Combining these insights, we can conclude that by selecting a corpus $C \subset \bm{D_{train}}$, a function of the following form satisfies the requirements of Equation \ref{general_confidence_form}, and could therefore provide an insightful global confidence measure.
+Combining these insights, we can conclude that by selecting a corpus $C \subset \bm{D_{train}}$, a function of the following form satisfies the requirements of Equation \ref{general_confidence_form}, and could therefore provide an insightful global confidence measure:
 \begin{equation}\label{simplex_confidence_form}
 	k = g(\bm{H_{train}}, \bm{H_{test}})
 \end{equation}
 
-The remainder of this paper explores possible formulations of such distance measures and evaluates their applications on real data.
+The remainder of this paper explores possible formulations of such distance measures and studies their empirical behaviour on real data.
 
 
 
 \section{Methodology}
 
-This section describes the experimental set up used to evaluate confidence measures. The lack of ground truth for such a measure means that quantitative evaluation can be challenging \cite{papernot_deep_2018}. In the following experiments, a binary classification convolutional neural network (CNN) model is trained on a defined set of in-distribution data (IDD). We then evaluate the success of a confidence measure by observing its relation to the proportion of out-of-distribution data (OOD), i.e. unseen classes.
+This section describes the experimental set up used to evaluate confidence measures. The lack of ground truth for such a measure means that quantitative evaluation can be challenging \cite[p.8]{papernot_deep_2018}. In the following experiments, a binary classification convolutional neural network (CNN) model is trained on a defined set of in-distribution data (IDD). We then evaluate the success of a confidence measure by observing its relation to the proportion of out-of-distribution data (OOD), i.e. unseen classes.
 This is applied in two cases: Section \ref{sec:mnist method} uses MNIST image data to build an intuition of the latent space distance measures on a relatively simple, well-studied data set, and Section \ref{sec:cancer method} applies the same approach to a real-world medical use case. Examples of the inputs for these two experiments are given in Figures \ref{mnist_inputs_image} and \ref{cancer_inputs_image}.
 All experiments are repeated 10 times and results have been replicated on different machines.
+
+
+\begin{figure}[h]
+  \centering
+  \includegraphics[scale=0.3]{images/mnist_experiment/mnist_digits.png}
+  \caption{Example inputs from MNIST data set. The models are trained on zeros and ones (in-distribution), then shown varying quantities of twos (out-of-distribution) at test time.}
+  \label{mnist_inputs_image}
+\end{figure}
+
+\begin{figure}[h]
+  \centering
+  \includegraphics[scale=0.5]{images/cancer_experiment/cancer_images.png}
+  \caption{Example inputs from lung and colon histopathological image data set. Left to right: benign lung, cancerous lung, benign colon, cancerous colon. The models are trained on lung images (in-distribution), then shown varying quantities of colon images (out-of-distribution) at test time.}
+  \label{cancer_inputs_image}
+\end{figure}
 
 
 \subsection{MNIST binary classification}
@@ -173,22 +189,8 @@ The CNN used for this task has two neurons in its last hidden layer. This allows
 
 \subsection{Cancer binary classification}
 \label{sec:cancer method}
-A similar approach is used to analyse the behaviour on a real-world health data set of lung and colon histopathological images labelled as cancerous or benign \cite{borkowski_lung_colon}. A CNN is trained on 8000 images of lungs with the binary classification goal of identifying cancer; these are the in-distribution data. The out-of-distribution data in this case is the set of colon images. At test time, varying proportions of lung and colon images are introduced. One difference to the previous experiment is the OOD data can contain positive and negative classes, i.e. colon images with cancer and without, so and OOD proportion of 1 corresponds to test data taken entirely from colon images, where classes are still balanced.
+A similar approach is used to analyse the behaviour on a real-world health data set of lung and colon histopathological images labelled as cancerous or benign \cite{borkowski_lung_colon}. A CNN is trained on 8000 images of lungs with the binary classification goal of identifying cancer; these are the in-distribution data. The out-of-distribution data in this case is the set of colon images. At test time, varying proportions of OOD images are introduced. One difference to the previous experiment is the OOD data can contain positive and negative classes, i.e. colon images with cancer and without, so an OOD proportion of 1 corresponds to test data taken entirely from colon images, where classes are still balanced.
 
-
-\begin{figure}
-  \centering
-  \includegraphics[scale=0.3]{images/mnist_experiment/mnist_digits.png}
-  \caption{Example inputs from MNIST data set. The models are trained on zeros and ones (in-distribution), then shown varying quantities of twos (out-of-distribution) at test time.}
-  \label{mnist_inputs_image}
-\end{figure}
-
-\begin{figure}
-  \centering
-  \includegraphics[scale=0.5]{images/cancer_experiment/cancer_images.png}
-  \caption{Example inputs from lung and colon tissue data set. Left to right: Benign lung, cancerous lung, benign colon, cancerous colon. The models are trained on lung images (in-distribution), then shown varying quantities of colon images (out-of-distribution) at test time.}
-  \label{cancer_inputs_image}
-\end{figure}
 
 
 
@@ -199,14 +201,14 @@ It is instructive to study the latent space of a simple model to gain an intuiti
 \subsection{Interpreting the latent space}
 \label{sec:interpret latent space}
 
-The positions of zeros and ones (in-distribution) and twos (out-of-distribution) in the 2-dimensional latent space of the CNN model are shown in Figure \ref{latents_2d}. The model learns to separate the in-distribution samples; zeros are aligned with the x-axis and ones with the y-axis. This is consistent with the interpretation of a  neural network trained for binary classification as a kernel logistic regression model, where the hidden layers effectively learn a non-linear kernel to separate the classes in latent space, and the final softmax layer is a typical logistic regression \cite{pmlr-v202-guyomard23a}.
+The positions of zeros and ones (IDD) and twos (OOD) in the 2-dimensional latent space of the CNN model are shown in Figure \ref{latents_2d}. The model learns to separate the in-distribution samples; zeros are aligned with the x-axis and ones with the y-axis. This is consistent with the interpretation of a  neural network trained for binary classification as a kernel logistic regression model, where the hidden layers effectively learn a non-linear kernel to separate the classes in latent space, and the final softmax layer is a typical logistic regression \cite{pmlr-v202-guyomard23a}.
 
-In contrast, the out-of-distribution data, i.e. the twos, lie in the middle of the latent space suggesting that the model is less able to distinguish these from the ones. Of note here is that they do generally lie closer to the cluster of zeros (the negative classification) than the cluster of ones (the positive classification). This is the correct classification for our model trained to identify ones, which implies that we may still get reasonable accuracy in practice despite having never seen similar data before, therefore relying on accuracy metrics alone could be instil a misplaced sense of confidence in the model's appropriateness; the \emph{confidence} in this model should be lower in this scenario even if the predictions are correct.
+In contrast, the OOD data, i.e. the twos, lie in the middle of the latent space suggesting that the model is less able to distinguish these from the ones. Of note here is that they do generally lie closer to the cluster of zeros (the negative classification) than the cluster of ones (the positive classification). This is the correct classification for our model trained to identify ones, which implies that we may still get reasonable accuracy in practice despite having never seen similar data before, therefore relying on accuracy metrics alone could instil a misplaced sense of confidence in the model's appropriateness. The \emph{confidence} in this model should be lower in this scenario even if the predictions are correct.
 
-The effect of applying Simplex to this data is shown in Figure \ref{residual_shift_2d}. The in-distribution samples are shifted along their respective axes towards the centre of the cluster of that digit. This is consistent with the idea behind Simplex that "outlier" points are approximated by a combination of points in the corpus hull. In contrast, the out-of-distribution digits do not move in a consistent direction, reflecting that the model is unable to reconstruct them consistently using the corpus, but that the basis vectors provided by the corpus span the required latent space. This can be observed in Figure \ref{residuals_2d} which shows the residual vectors in latent space.
+The effect of applying Simplex to this data is shown in Figure \ref{residual_shift_2d}. The in-distribution samples are shifted along their respective axes towards the centre of the cluster of that digit. This is consistent with the idea behind Simplex that "outlier" points are approximated by a combination of nearest points in the corpus hull. In contrast, the out-of-distribution digits do not move in a consistent direction, reflecting that the model is unable to reconstruct them consistently using the corpus, but the basis vectors provided by the corpus span the required latent space. This can be observed in Figure \ref{residuals_2d} which shows the residual vectors in latent space.
 
-The same approach is repeated for the 3-dimensional case to verify that similar relations hold using a new CNN is created with 3 neurons in its last hidden layer. Following the same approach, in Figure \ref{latents_3d} the in-distribution data points again form linearly separable clusters in 3D latent space, while the out-of-distribution data lies in between. In Figures \ref{residual_shift_3d} and \ref{residuals_3d}, it is again observed that the Simplex approximations bring points closer towards the centre of clusters.
-\footnote{Interactive versions of these 3D plots illustrate this more clearly. These are available in the Github repository for the
+The same approach is repeated for the 3-dimensional case to verify that similar relations hold using a new CNN created with 3 neurons in its last hidden layer. Following the same approach, in Figure \ref{latents_3d} the IDD points again form linearly separable clusters in 3D latent space, while the OOD data lies in between. In Figures \ref{residual_shift_3d} and \ref{residuals_3d}, it is again observed that the Simplex approximations bring points closer towards the centre of clusters.
+\footnote{Interactive versions of these 3D plots illustrate this more clearly. These are available in the Github repository for this project for the
 \href{https://htmlpreview.github.io/?https://github.com/gjohl/xai/blob/master/xai/experiments/report_figures/latent_space/interactive_latent_space_scatter_3d.html}{latent space distribution}
 , the
 \href{https://htmlpreview.github.io/?https://github.com/gjohl/xai/blob/master/xai/experiments/report_figures/latent_space/interactive_residuals_3d.html}{residual distribution}
@@ -215,72 +217,66 @@ and an
 }
 
 
-% TODO GJ: Figure formatting
-\begin{figure}[h]
-\centering
-\begin{minipage}{.25\textwidth}
-  \centering
-  \includegraphics[width=.8\linewidth]{images/latent_space/latent_space_scatter_2d.png}
-  \captionof{figure}{Distribution of a sample of digits in the model's latent space.}
+\begin{figure}[t]
+
+\begin{subfigure}{.33\linewidth}
+  \includegraphics[width=\linewidth]{images/latent_space/latent_space_scatter_2d.png}
+  \caption{}
   \label{latents_2d}
-\end{minipage}%
-\hspace{.05\textwidth}
-\begin{minipage}{.25\textwidth}
-  \centering
-  \includegraphics[width=.8\linewidth]{images/latent_space/residual_shift_2d.png}
-  \captionof{figure}
-  {Residual shift of true values (circles) to their Simplex approximation (crosses).}
+\end{subfigure}\hfill % <-- "\hfill"
+\begin{subfigure}{.33\linewidth}
+  \includegraphics[width=\linewidth]{images/latent_space/residual_shift_2d.png}
+  \caption{}
   \label{residual_shift_2d}
-\end{minipage}
-\begin{minipage}{.25\textwidth}
-  \centering
-  \includegraphics[width=.8\linewidth]{images/latent_space/residuals_2d.png}
-  \captionof{figure}
-  {Residual vectors in the model's latent space.}
+\end{subfigure}\hfill % <-- "\hfill"
+\begin{subfigure}{.33\linewidth}
+  \includegraphics[width=\linewidth]{images/latent_space/residuals_2d.png}
+  \caption{}
   \label{residuals_2d}
-\end{minipage}
+\end{subfigure}
+
+\caption{2D latent space. Left to right: (a) sample input digits in the model's latent space; (b) residual shift of true points (circles) to their Simplex approximation (crosses); (c) residual vectors in latent space.}
+\label{fig:latent_plots_2d}
 \end{figure}
 
+% \medskip % create some *vertical* separation between the graphs
+\begin{figure}[t]
 
-\begin{figure}[h]
-\centering
-\begin{minipage}{.25\textwidth}
-  \centering
-  \includegraphics[width=.8\linewidth]{images/latent_space/latent_space_scatter_3d.png}
-  \captionof{figure}{Distribution of a sample of digits in the model's latent space.}
+\begin{subfigure}{.33\linewidth}
+  \includegraphics[width=\linewidth]{images/latent_space/latent_space_scatter_3d.png}
+  \caption{}
   \label{latents_3d}
-\end{minipage}%
-\hspace{.05\textwidth}
-\begin{minipage}{.25\textwidth}
-  \centering
-  \includegraphics[width=.8\linewidth]{images/latent_space/residual_shift_3d.png}
-  \captionof{figure}
-  {Residual shift of true values (circles) to their Simplex approximation (crosses).}
+\end{subfigure}\hfill % <-- "\hfill"
+\begin{subfigure}{.33\linewidth}
+  \includegraphics[width=\linewidth]{images/latent_space/residual_shift_3d.png}
+  \caption{}
   \label{residual_shift_3d}
-\end{minipage}
-\begin{minipage}{.25\textwidth}
-  \centering
-  \includegraphics[width=.8\linewidth]{images/latent_space/residuals_3d.png}
-  \captionof{figure}
-  {Residual vectors in the model's latent space.}
+\end{subfigure}\hfill % <-- "\hfill"
+\begin{subfigure}{.33\linewidth}
+  \includegraphics[width=\linewidth]{images/latent_space/residuals_3d.png}
+  \caption{}
   \label{residuals_3d}
-\end{minipage}
+\end{subfigure}
+
+\caption{3D latent space. Left to right: (a) sample input digits in the model's latent space; (b) residual shift of true points (circles) to their Simplex approximation (crosses); (c) residual vectors in latent space.}
+\label{fig:latent_plots_3d}
 \end{figure}
 
 
-\subsection{Distance measures formulations}
-\label{sec:distance measures}
-A set of distance measures is proposed in this section, guided by the experimental insights above. These are then applied to the two data sets in Section \ref{sec:results section} to establish their relation to the OOD proportion, i.e. the level of extrapolation.
 
-A natural starting point for a distance measure is to use the residual vectors of the Simplex approximation, which measure of how closely a test example can be decomposed as a combination of corpus inputs. This is the motivation behind the $r_norm$ distance measure, which calculates the vector norm of each residual example, and averages this over the test data set.
+\subsection{Distance measure formulations}
+\label{sec:distance measures}
+A set of distance measures is proposed in this section, guided by the experimental insights above. These are then applied to the two data sets in Section \ref{sec:results section} to establish their empirical relation to the OOD proportion, i.e. the level of extrapolation.
+
+A natural starting point for a distance measure is to use the residual vectors of the Simplex approximation, which measure how closely a test example can be decomposed as a combination of corpus inputs. This is the motivation behind the $r_{norm}$ distance measure, which calculates the vector norm of each residual example, and averages this over the test data set.
 \begin{equation}
 \label{eq:r norm}
 	r_{norm} = \frac{\sum_i^n ||\bm{r_{test_i}}||_2}{n}  \forall i  \in \bm{D_{test}}
 \end{equation}
 
-One may initially expect this to be larger for OOD data points, but as observed in Figures \ref{residual_shift_2d} and \ref{residuals_2d}, the in-distribution points move along the axis, whereas OOD points move more randomly and begin closer to the centre of the latent space, so their residuals are actually smaller. This direction-specific movement is of particular interest, and forms the basis of later distance measures.
+One may initially expect this to be larger for OOD data points, but as observed in Figures \ref{residual_shift_2d} and \ref{residuals_2d}, the IDD points move along the axis, whereas OOD points move more randomly and begin closer to the centre of the latent space, so their residuals are actually smaller. This direction-specific movement is of particular interest, and forms the basis of distance measures introduced later in this section.
 
-The next straightforward measure is to take the norm of the latent space. As observed in Figure \ref{latents_2d} and \ref{latents_3d}, the in-distribution points are separated by the classifier, whereas OOD points cluster towards the centre of the latent space. Therefore, this should provide some some measure of the shrinkage of the latent space
+The next straightforward measure is to take the norm of the latent space. As observed in Figure \ref{latents_2d} and \ref{latents_3d}, the IDD points are separated by the classifier, whereas OOD points cluster towards the centre of the latent space. Therefore, this should provide some some measure of the shrinkage of the latent space caused by OOD data.
 \begin{equation}
 \label{eq:h norm}
 	h_{norm} = ||\bm{H_{test}}||_2
@@ -292,12 +288,12 @@ A variation of this approach is introduced to address the fact that if one class
 	h_{norm\_classwise} =\sum_c \frac{|\bm{D_{test_{\hat{y}=c}}}|}{|\bm{D_{test}}|} \cdot ||\bm{H_{test_{\hat{y}=c}}}||_2 \forall c \in  [0, 1]
 \end{equation}
 
-A direction-wise variant of this measure, $h_{norm\_directionwise}$, is calculated, noting that the in-distribution points of a given class generally occupy a particular hyperplane of the latent space, so the out-of-plane axis for the true class is generally noise. We expect this noise to be higher for OOD points than in-distribution points. The out-of-plane axis is determined by selecting the axis with the smallest standard deviation for the validation set. The calculation is then identical to Equation \ref{eq:h norm classwise}.
+A direction-wise variant of this measure, $h_{norm\_directionwise}$, is calculated, noting that the in-distribution points of a given class generally occupy a particular hyperplane of the latent space, so the out-of-plane axis for the true class is generally noise. We expect this noise to be higher for OOD points than in-distribution points. The out-of-plane axis is determined by selecting the axis with the smallest variance for the validation set. The calculation is then identical to Equation \ref{eq:h norm classwise}.
 
-Relative variants of each of the above measures are obtained by taking the ratio of $h_{norm}$ values between the test set and the latent approximation of the validation set under Simplex. Using a validation set in this way resembles the calibration set used for the deep k-nearest neighbours approach \cite{papernot_deep_2018}. This allows for more interpretable scales---a value of 1 for $h_{rel\_norm}$ or $h_{rel\_norm\_classwise}$ indicates that the test set came from a similar distribution as the in-distribution validation set, whereas a smaller value suggests the test contains more OOD data, which shrinks the latent space towards the centre. For $h_{rel\_norm\_directionwise}$ the value should increase with OOD data as these are typically further out-of-plane.
+Relative variants of each of the above measures are obtained by taking the ratio of $h_{norm}$ values between the test set and the latent approximation of the validation set under Simplex. Using a validation set in this way resembles the calibration set used for the Deep KNN approach \cite{papernot_deep_2018}. This allows for more interpretable scales---a value of 1 for $h_{rel\_norm}$ or $h_{rel\_norm\_classwise}$ indicates that the test set came from a similar distribution as the in-distribution validation set, whereas a smaller value suggests the test contains more OOD data, which shrinks the latent space towards the centre. For $h_{rel\_norm\_directionwise}$ the value should increase with OOD data as these are typically further out-of-plane.
 \begin{equation}
 \label{eq:relative h norm}
-	h_{rel\_norm} = \frac{h_{norm_{test}}}{\hat{h}_{norm_{validation}}}
+	h_{rel} = \frac{h_{test}}{\hat{h}_{validation}}
 \end{equation}
 
 
@@ -309,139 +305,129 @@ The results of the proposed experiments are provided here, firstly for handwritt
 
 \subsection{MNIST classification experiment results}
 \label{sec:mnist results}
-As a benchmark, common performance metrics accuracy and AUC are shown in Figure \ref{res:mnist accuracy}, as well as the the mean of the probabilities output by the model which are commonly cited as a measure of confidence. It is observed that accuracy and AUC both decrease as the OOD proportion increases, which is expected, though their absolute values are still relatively high; a practitioner may well still choose such a model on the basis of these values, not knowing that their data set is so far removed from the model's training data.
-The model probabilities are high across all levels of OOD, corroborating the observations of Papernot and McDaniel in the context of Deep kNN that model probabilities are poor proxies of confidence, despite being widely used for this purpose \cite{papernot_deep_2018}. The dispersion of probabilities does show some relation to the OOD proportion, shown in Figure \ref{res:mnist prob std}.
+As a benchmark, common performance metrics accuracy and AUC are shown in Figure \ref{res:mnist accuracy}, as well as the the mean of model probabilities which is commonly cited as a measure of confidence. It is observed that accuracy and AUC both decrease as the OOD proportion increases, which is expected, though their absolute values are still relatively high; a practitioner may well still choose such a model on the basis of these values, not knowing that their test data is so far removed from the model's training data.
+The model probabilities are high across all levels of OOD, corroborating the observations of Papernot and McDaniel in the context of Deep KNN that model probabilities are poor proxies of confidence, despite being widely used for this purpose \cite{papernot_deep_2018}. The dispersion of these probabilities does show some relation to the OOD proportion, shown in Figure \ref{res:mnist prob std}.
 
-The values of $h_{norm}$ and $h_{norm\_classwise}$ are shown in Figure \ref{res:mnist h norm}, a residual-based measure $r_{norm}$ in Figure \ref{res:mnist r norm}, and relative distance measures $h_{rel\_norm}$ and $h_{rel\_norm\_classwise}$ in Figure \ref{res:mnist relative h norm}.
-These all decrease as OOD points are added, in line with the understanding that OOD points lie in the middle of the space whereas in-distribution points a separated to the extremes. Also observed is similarity between  $h_{rel\_norm}$ and $h_{rel\_norm\_classwise}$, owing to the balanced classes of the experimental design. The behaviour in cases of imbalanced classes is a topic of further research.
-
+The values of $h_{norm}$ and $\hat{h}_{norm}$ are shown in Figure \ref{res:mnist h norm}, a residual-based measure $r_{norm}$ in Figure \ref{res:mnist r norm}, and relative distance measures $h_{rel\_norm}$ and $h_{rel\_norm\_classwise}$ in Figure \ref{res:mnist relative h norm}.
+These all decrease as OOD points are added, in line with the understanding that OOD points lie in the middle of the space whereas IDD points are separated to the extremes.
+The natural scaling of $h_{rel\_norm}$ and $h_{rel\_norm\_classwise}$ is observed, as well as their similarity owing to the balanced classes of the experimental design. The behaviour in cases of imbalanced classes is a topic of further research.
 The direction-specific relative measure $h_{rel\_norm\_directionwise}$, which isolates the out-of-plane axis, is shown in Figure \ref{res:mnist relative h norm directionwise}.
-This increases with OOD because in-distribution points typically lie in the plane whereas OOD points are more scattered.
+This increases with OOD because IDD points typically lie in the plane whereas OOD points are more scattered.
 
+\begin{figure}[ht]
 
-\begin{figure}[h]
-\centering
-\begin{minipage}{.25\textwidth}
-  \centering
-  \includegraphics[width=.8\linewidth]{images/mnist_experiment/classification_metrics.png}
-  \captionof{figure}{Classification metrics for MNIST data.}
+\begin{subfigure}{.33\linewidth}
+  \includegraphics[width=\linewidth]{images/mnist_experiment/classification_metrics.png}
+  \caption{}
   \label{res:mnist accuracy}
-\end{minipage}%
-\hspace{.05\textwidth}
-\begin{minipage}{.25\textwidth}
-  \centering
-  \includegraphics[width=.8\linewidth]{images/mnist_experiment/probability_std_dev.png}
-  \captionof{figure}
-  {Standard deviation of model probabilities.}
+\end{subfigure}\hfill % <-- "\hfill"
+\begin{subfigure}{.33\linewidth}
+  \includegraphics[width=\linewidth]{images/mnist_experiment/probability_std_dev.png}
+  \caption{}
   \label{res:mnist prob std}
-\end{minipage}
-\begin{minipage}{.25\textwidth}
-  \centering
-  \includegraphics[width=.8\linewidth]{images/mnist_experiment/h_norm.png}
-  \captionof{figure}
-  {Norm of latent space.}
+\end{subfigure}\hfill % <-- "\hfill"
+\begin{subfigure}{.33\linewidth}
+  \includegraphics[width=\linewidth]{images/mnist_experiment/h_norm.png}
+  \caption{}
   \label{res:mnist h norm}
-\end{minipage}
-\end{figure}
+\end{subfigure}
 
+% \end{figure}
+% \medskip % create some *vertical* separation between the graphs
+% \begin{figure}[hbt]
 
-\begin{figure}[h]
-\centering
-\begin{minipage}{.25\textwidth}
-  \centering
-  \includegraphics[width=.8\linewidth]{images/mnist_experiment/residual_norm.png}
-  \captionof{figure}{Norm of residuals.}
+\begin{subfigure}{.33\linewidth}
+  \includegraphics[width=\linewidth]{images/mnist_experiment/residual_norm.png}
+  \caption{}
   \label{res:mnist r norm}
-\end{minipage}%
-\hspace{.05\textwidth}
-\begin{minipage}{.25\textwidth}
-  \centering
-  \includegraphics[width=.8\linewidth]{images/mnist_experiment/relative_h_norm.png}
-  \captionof{figure}{Ratio of test and validation latent space norms.}
+\end{subfigure}\hfill % <-- "\hfill"
+\begin{subfigure}{.33\linewidth}
+  \includegraphics[width=\linewidth]{images/mnist_experiment/relative_h_norm.png}
+  \caption{}
   \label{res:mnist relative h norm}
-\end{minipage}
-\begin{minipage}{.25\textwidth}
-  \centering
-  \includegraphics[width=.8\linewidth]{images/mnist_experiment/relative_h_norm_directionwise.png}
-  \captionof{figure}{Ratio of test and validation latent space norms in the out-of-plane axis.}
+\end{subfigure}\hfill % <-- "\hfill"
+\begin{subfigure}{.33\linewidth}
+  \includegraphics[width=\linewidth]{images/mnist_experiment/relative_h_norm_directionwise.png}
+  \caption{}
   \label{res:mnist relative h norm directionwise}
-\end{minipage}
+\end{subfigure}
+
+\caption{
+MNIST experiment results showing behaviour as OOD proportion increases:
+(a) Classification metrics; (b) Standard deviation of model probabilities; (c) Norm of true and approximate latent spaces;
+(d) Average norm of residual vectors; (e) Ratio of test and validation latent space norms; (f) Ratio of test and validation latent space norms in the out-of-plane axis.
+}
+\label{fig:mnist_results_ plots}
 \end{figure}
-
-
 
 
 
 \subsection{Cancer classification experiment results}
 \label{sec:cancer results}
-The results for a similar experiment on the tissue image data set shows largely consistent results, see Figures \ref{res:cancer accuracy} to \ref{res:cancer relative h norm directionwise}. This is encouraging, as it suggests that the conclusions drawn about Simplex-based confidence measures generalise to real-world data sets, and may therefore be useful to aid practitioners in understanding and applying models.
+The results for a similar experiment on the tissue image data set shows largely consistent results, see Figure \ref{fig:cancer_results_plots}. This is encouraging, as it suggests that the conclusions drawn about Simplex-based confidence measures generalise to real-world data sets, and may therefore be useful to aid practitioners in understanding and applying models.
 
-The only notable difference is the behaviour of the direction-specific latent space norm in Figure \ref{res:cancer relative h norm directionwise}. This may be due to the different dimensionality of the latent space of the model used for this experiment. For each class in the data, this measure isolates the dimension with the smallest variance in the validation data as the noise axis. This approach worked for the MNIST model with 2D latent space. For higher dimensions, this may not be as appropriate if the IDD points lie in a plane that is not aligned with the axes. An alternative methodology may be more robust in higher dimensions, where the covariance matrix of each class in the validation set is used to identify a variable number of axes to isolate. This is an area of further research.
+The only notable difference is the behaviour of the direction-specific latent space norm in Figure \ref{res:cancer relative h norm directionwise}. This may be due to the different dimensionality of the latent space of the model used for this experiment. For each class in the data, this measure isolates the dimension with the smallest variance in the validation data as the noise axis. This approach worked for the MNIST model with a 2D latent space. For higher dimensions, this may not be as appropriate if the IDD points lie in a plane that is not aligned with the latent space axes. An alternative methodology may be more robust in higher dimensions, where the covariance matrix of each class in the validation set is used to identify one or more axes to isolate. This is an area of further research.
 
 
+\begin{figure}[ht]
 
-\begin{figure}[h]
-\centering
-\begin{minipage}{.25\textwidth}
-  \centering
-  \includegraphics[width=.8\linewidth]{images/cancer_experiment/classification_metrics.png}
-  \captionof{figure}{Classification metrics for tissue images.}
+\begin{subfigure}{.33\linewidth}
+  \includegraphics[width=\linewidth]{images/cancer_experiment/classification_metrics.png}
+  \caption{}
   \label{res:cancer accuracy}
-\end{minipage}%
-\hspace{.05\textwidth}
-\begin{minipage}{.25\textwidth}
-  \centering
-  \includegraphics[width=.8\linewidth]{images/cancer_experiment/probability_std_dev.png}
-  \captionof{figure}
-  {Standard deviation of model probabilities.}
+\end{subfigure}\hfill % <-- "\hfill"
+\begin{subfigure}{.33\linewidth}
+  \includegraphics[width=\linewidth]{images/cancer_experiment/probability_std_dev.png}
+  \caption{}
   \label{res:cancer prob std}
-\end{minipage}
-\begin{minipage}{.25\textwidth}
-  \centering
-  \includegraphics[width=.8\linewidth]{images/cancer_experiment/h_norm.png}
-  \captionof{figure}
-  {Norm of latent space.}
+\end{subfigure}\hfill % <-- "\hfill"
+\begin{subfigure}{.33\linewidth}
+  \includegraphics[width=\linewidth]{images/cancer_experiment/h_norm.png}
+  \caption{}
   \label{res:cancer h norm}
-\end{minipage}
-\end{figure}
+\end{subfigure}
 
+% \end{figure}
+% \medskip % create some *vertical* separation between the graphs
+% \begin{figure}[hbt]
 
-\begin{figure}[h]
-\centering
-\begin{minipage}{.25\textwidth}
-  \centering
-  \includegraphics[width=.8\linewidth]{images/cancer_experiment/residual_norm.png}
-  \captionof{figure}{Norm of residuals.}
+\begin{subfigure}{.33\linewidth}
+  \includegraphics[width=\linewidth]{images/cancer_experiment/residual_norm.png}
+  \caption{}
   \label{res:cancer r norm}
-\end{minipage}%
-\hspace{.05\textwidth}
-\begin{minipage}{.25\textwidth}
-  \centering
-  \includegraphics[width=.8\linewidth]{images/cancer_experiment/relative_h_norm.png}
-  \captionof{figure}{Ratio of test and validation latent space norms}
+\end{subfigure}\hfill % <-- "\hfill"
+\begin{subfigure}{.33\linewidth}
+  \includegraphics[width=\linewidth]{images/cancer_experiment/relative_h_norm.png}
+  \caption{}
   \label{res:cancer relative h norm}
-\end{minipage}
-\begin{minipage}{.25\textwidth}
-  \centering
-  \includegraphics[width=.8\linewidth]{images/cancer_experiment/relative_h_norm_directionwise.png}
-  \captionof{figure}{Ratio of test and validation latent space norms in the out-of-plane axis.}
+\end{subfigure}\hfill % <-- "\hfill"
+\begin{subfigure}{.33\linewidth}
+  \includegraphics[width=\linewidth]{images/cancer_experiment/relative_h_norm_directionwise.png}
+  \caption{}
   \label{res:cancer relative h norm directionwise}
-\end{minipage}
+\end{subfigure}
+
+\caption{
+Histopathological cancer experiment results showing behaviour as OOD proportion increases:
+(a) Classification metrics; (b) Standard deviation of model probabilities; (c) Norm of true and approximate latent spaces;
+(d) Average norm of residual vectors; (e) Ratio of test and validation latent space norms; (f) Ratio of test and validation latent space norms in the out-of-plane axis.
+}
+\label{fig:cancer_results_plots}
 \end{figure}
 
 
 
 \section{Conclusions}
 
-The Simplex approach to the latent space and its approximations was used to form several distance measures that can act as a measure of confidence in the model for the given application.
+The Simplex approach to the latent space was used to form several distance measures that can act as a measure of confidence in the model for the given application.
 An intuitive understanding of the latent space of a model was explored by examining simple models in 2D and 3D for in-distribution and out-of-distribution data.
-This helps to understand the behaviour of a model, which in turn guided the formulation of distance metrics. These provide a global quantification of extrapolation which can serve as a confidence measure.
+This latent space perspective helps to understand the behaviour of a model, which in turn guided the formulation of distance metrics which provide a global quantification of extrapolation.
 
 These distance measures were applied to two binary classification tasks in an experimental setup that allowed us to vary the ground truth level of extrapolation.
 In both experiments, we show that the distance measures correspond with the level of extrapolation by varying the degree of out-of-distribution samples in the test set.
-This can be used to supplement accuracy measurements to guide practitioners when selecting a model and understanding when a model is operating beyond its intended use case.
+This insight can be used to supplement accuracy measurements to guide practitioners when selecting a model and understanding when that model is operating beyond its intended use case.
 
-Armed with this knowledge, the practitioner can either select a more appropriate model or address the cause of extrapolation, which can be done using the original Simplex method to understand individual instances either in terms of their features or corpus examples. This can identify aleatoric uncertainty caused by missing features or biases causes by underrepresented examples in the training data, both of which can exacerbate healthcare inequity. Thus, this approach could be a useful approach in the burgeoning field of data-centric AI \cite{zha_data-centric_2023}.
+Armed with this knowledge, the practitioner can either select a more appropriate model or address the cause of extrapolation, which can be done using the original Simplex method to understand individual instances either in terms of their features or corpus examples. This can identify aleatoric uncertainty caused by missing features or biases caused by underrepresented examples in the training data, both of which can exacerbate healthcare inequity. Thus, this approach could be a useful tool in the burgeoning field of data-centric AI \cite{zha_data-centric_2023}.
 
 The consequence of the extension proposed in this work is that the Simplex approach can be applied top-down to the data set at a high-level, and then used to investigate further on the basis of features or examples, providing a holistic solution to understanding the interaction between data and models.
 
@@ -457,13 +443,13 @@ The approach of using latent space representations and approximations as a measu
   \centering
   % \fbox{\rule[-.5cm]{0cm}{4cm} \rule[-.5cm]{4cm}{0cm}}
   \includegraphics[scale=0.07]{images/explainability_feedback_loop.jpg}
-  \caption{Using explainability methods to continuously improve models and data. The solid black arrows show the flow of data in current paradigms, where a model generates outputs from data and a post-hoc explainer can interpret the model's behaviour. The dashed lines show how global explainability measures can facilitate a feedback loop where models and data can be improved based on the explainer.}
+  \caption{Using explainability methods to continuously improve models and data. The solid black arrows show the flow of data in current paradigms, where a model generates outputs from data with a post-hoc explainer. The dashed lines show how global explainability measures can facilitate a feedback loop where models and data can be improved based on the explainer.}
   \label{explainability_loop}
 \end{figure}
 
 
 \paragraph{Variations and comparisons with other distance measures}
-Alternative formulations of distance measures based on latent spaces and Simplex approximations could be explored, some of which were noted in discussion of results.
+Alternative formulations of distance measures based on latent spaces and Simplex approximations could be explored, such as the covariance-based approach noted in Section \ref{sec:cancer results}.
 Calibrating these measures experimentally on different models and data sets, as well as theoretical guarantees for such measures, are areas of further research.
 The effectiveness of using validation sets from data sets other than that used to train the model could be investigated. This would allow the approach to be used in cases where the training data is not available, for example, where privacy concerns limit dissemination of the training data.
 The approach could also be applied over multiple hidden layers of the model and aggregated, as in the Deep KNN approach, rather than using only the final hidden layers. The measures here could be benchmarked against other approaches, including Deep KNN, as well as more traditional measures of distance used in transfer learning \cite{zhuang_comprehensive_2021}, such as KL-divergence and Maximum Mean Discrepancy, both in the input space and latent space.
@@ -475,10 +461,10 @@ The experiments in this paper used image data, owing to the availability of publ
 
 \paragraph{Transfer learning} \label{sec:transfer learning}
 Transfer learning is an increasingly important topic with the proliferation of pre-trained foundational models.
-This has implications in healthcare, where the application of such models could provide powerful predictions on small data sets, provided the user can evaluate the confidence of the model. This could allow for more powerful individualised models, where a foundational model can be trained on the health records of a particular patient or group of patients.
+The application of such models could provide powerful predictions on small data sets, provided the user can evaluate the confidence of the model. This could allow for more powerful individualised models, where a foundational model can be trained on the health records of a particular patient or group of patients.
 A method of measuring the transferability of a model across domains is an open question \cite{pan_survey_2010} \cite{zhuang_comprehensive_2021}. The intuitive requirements for such a measure are that it be a model-specific measure between  a source data set $D_{source}$ and target data set $D_{target}$. This therefore bears a close resemblance to \ref{general_confidence_form}.
 The open question of identifying and explaining negative transfer could also be explored by researching behaviour in the latent space.
-A related research area noted by \cite{zhuang_comprehensive_2021} is \emph{interpretability} of transfer. The approach explored in this paper is rooted in explainability methods and therefore naturally addresses this concern.
+A related research area noted by Zhuang et al. is \emph{interpretability} of transfer \cite{zhuang_comprehensive_2021}. The approach explored in this paper is rooted in explainability methods and therefore naturally addresses this concern.
 
 \paragraph{Model design}
 With appropriate scaling of the distance measures proposed in this paper, we can compare confidence between different models to answer the question of which model best explains a given data set. Where no satisfactory models are found, this can influence the design of model architecture to better capture the unexplained information.
@@ -486,9 +472,10 @@ With appropriate scaling of the distance measures proposed in this paper, we can
 
 \paragraph{Data-centric AI}
 The approach outlined here can be used to identify data sets which are poorly described by existing models, i.e. where substantial extrapolation is required.
-These can be explored in-depth by explaining the poorly approximated test data in terms of features or examples, as in the original paper \cite{crabbe_explaining_2021}.
+These can be explored in-depth by explaining the poorly approximated test data in terms of features or examples, as in the original Simplex paper \cite{crabbe_explaining_2021}.
 The feature-based approach can identify cases where features are not informative enough and may benefit from collecting additional fields.
-The example-based approach can identify cases where particular test instances are underrepresented in the test data, for example when specific ethnic groups are not represented in the training data and therefore would be at risk of misclassification by the model.
+The example-based approach can identify cases where particular test instances are underrepresented in the test data,
+such as when specific ethnic groups are not adequately represented in the healthcare studies used for training data and would therefore be at risk of misdiagnosis by the model.
 This could also identify areas of the latent space where synthetic data could be utilised.
 Identifying these biases and having the tools to address them can play an important role in improving input data and addressing healthcare inequity.
 
