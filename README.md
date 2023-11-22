@@ -13,8 +13,15 @@ Various experiments are run to explore the latent space and apply different dist
 approximations. These are applied in two settings: MNIST handwritten digits and histopathological lung and colon
 images to classify cancer.
 
+All code use to handle data, train models, and run experiments is contained in this repo, 
+along with saved models, results and figures.
+these can be run with the environment set up described in the next section. 
+
 
 ## Dev environment setup
+this section contains notes to install and run the models and experiments in this repo.
+
+Create an environment.
 ```shell
 conda create -n xai python=3.11
 conda activate xai
@@ -25,7 +32,7 @@ pip install simplexai
 pip install -e .
 ```
 
-Compile requirements
+Recompile requirements (only required if new dependencies are added or upgrading existing libraries).
 ```shell
 pip install pip-tools
 
