@@ -32,8 +32,15 @@ def plot_ood_results_with_error_bars(mean_df: pd.DataFrame,
                                      std_df: pd.DataFrame,
                                      cols: list,
                                      ylabel: str,
+                                     renamed_cols: list = None,
                                      legend: bool = True):
     """Plot the given columns against out-of-distribution, with error bars."""
+    if renamed_cols:
+        col_mapping = {k: v for k, v in zip(cols, renamed_cols)}
+        mean_df = mean_df.rename(columns=col_mapping)
+        std_df = std_df.rename(columns=col_mapping)
+        cols = renamed_cols
+
     fig = plt.figure()
     for col in cols:
         plt.plot(mean_df.index, mean_df[col], label=col)
