@@ -1,13 +1,17 @@
 # xai
-
-Research work extending the explainable AI approach of the van der Schaar lab. See:
-Crabbé, J., Qian, Z., Imrie, F., & van der Schaar, M. (2021). Explaining latent representations with a corpus of examples. In Advances in Neural Information Processing Systems
+Explainable AI research repository.
 
 
 ## Background
+This repository contains research work extending the explainable AI approach of the van der Schaar lab. 
+See: `Crabbé, J., Qian, Z., Imrie, F., & van der Schaar, M. (2021). Explaining latent representations with a corpus of examples. In Advances in Neural Information Processing Systems`
 
+Specifically, we seek to use the Simplex explainability approach to establish global confidence measures
+to assess the appropriateness of a given model to a particular dataset.
 
-## How to use
+Various experiments are run to explore the latent space and apply different distance measures based on Simplex
+approximations. These are applied in two settings: MNIST handwritten digits and histopathological lung and colon
+images to classify cancer.
 
 
 ## Dev environment setup
