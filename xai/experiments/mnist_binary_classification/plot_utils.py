@@ -51,6 +51,7 @@ def plot_ood_results_with_error_bars(mean_df: pd.DataFrame,
 
     if legend:
         plt.legend()
+    fig.tight_layout()
     return fig
 
 
