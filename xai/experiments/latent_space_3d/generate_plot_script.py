@@ -86,4 +86,4 @@ residual_plot_fname = "residuals_3d.png"
 
 residuals = latents - latents_approx
 plot_latent_space_3d(residuals, labels_digits, digits)
-plt.savefig(LATENT_FIGURES_DIR / residual_plot_fname, format='png')
+# plt.savefig(LATENT_FIGURES_DIR / residual_plot_fname, format='png')

@@ -33,6 +33,7 @@ def plot_latent_space_2d(latents: torch.Tensor,
     plt.ylabel('Latent Dimension 2')
     # plt.title("Input digits in the model's latent space")
     plt.legend()
+    fig.tight_layout()
     return fig
 
 
@@ -53,6 +54,7 @@ def plot_latent_space_3d(latents: torch.Tensor,
     plt.ylabel('Latent Dimension 2')
     # plt.title("Input digits in the model's latent space")
     plt.legend()
+    fig.tight_layout()
     return fig
 
 
@@ -78,6 +80,7 @@ def plot_latent_shift(latents: torch.Tensor,
     plt.xlabel('Latent Dimension 1')
     plt.ylabel('Latent Dimension 2')
     # plt.title("Input digit's movement under simplex")
+    fig.tight_layout()
     return fig
 
 
@@ -106,6 +109,7 @@ def plot_latent_shift_3d(latents: torch.Tensor,
     ax.set_ylabel('Latent Dimension 2')
     ax.set_zlabel('Latent Dimension 3')
     # plt.title("Input digit's movement under simplex")
+    fig.tight_layout()
     return fig
 
 
