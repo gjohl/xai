@@ -109,7 +109,7 @@ The Simplex approach \cite{crabbe_explaining_2021} can be used to explain indivi
 In this paper, we aim to extend this method by aggregating this concept over the test data set, to provide a global quantification of the degree of extrapolation. For a given data set, to what extent does a particular model need to extrapolate beyond the data it was trained on? Intuitively, we may want to be more sceptical of models with a high degree of extrapolation, so this effectively provides a measure of confidence.
 A real-world example of this question is investigated in Section \ref{sec:cancer results}---given a cancer detection image classification model which, unbeknownst to us, has only been trained on images of lungs, can we identify when the model is operating outside of its circle of competence? A measure of extrapolation could highlight where extra caution should be exercised when following the model's outputs, even when the accuracy is high.
 
-This has implications in model selection, transfer learning and data-centric AI among others. The benefit of such a confidence measure is that the same Simplex methodology can be used as an end-to-end solution for identifying and addressing issues with data and models---the global confidence measure can be used to identify suboptimal model-data combinations, which can then be understood at a more detailed level in terms of both features and examples in order to rectify any issues.
+This has implications in model selection, transfer learning and data-centric AI among other fields. The benefit of such a confidence measure is that the same Simplex methodology can be used as an end-to-end solution for identifying and addressing issues with data and models---the global confidence measure can be used to identify suboptimal model-data combinations, which can then be understood at a more detailed level in terms of both features and examples in order to rectify any issues.
 
 
 \paragraph{Related works}
@@ -143,7 +143,7 @@ Specifically, we consider the scenario where we have a model $M$ trained on data
 
 It is also noted that if $k$ has consistent scaling across models and data sets, then it can also be used to distinguish between competing models ${M_1, ..., M_m}$.
 
-The Simplex approach can be used to explain a given test instance in terms of a corpus of examples $C$. The extension proposed in this paper focuses on three key insights of the original method: (1) the behaviour of a model $M$ on an instance $\bm{d_{test_i}} \in \bm{D_{test}}$ can understood better in latent space than input space, i.e. using its latent representation $\bm{h_{test_i}}$ produced by the model's last hidden layer, (2) an approximation of this latent representation $\bm{\tilde{h}_{test_i}}$  can be defined in terms of a user-selected corpus of examples $C$, and (3) the residual $\bm{r_{test_i}} = ||\bm{h_{test_i}} - \bm{\tilde{h}_{test_i}}||_2$ can identify cases where the input $\bm{d_{test_i}}$ differs from $C$.
+The Simplex approach can be used to explain a given test instance in terms of a corpus of examples $C$. The extension proposed in this paper focuses on three key insights of the original method: (1) the behaviour of a model $M$ on an instance $\bm{d_{test_i}} \in \bm{D_{test}}$ can be better understood in latent space than input space, i.e. using its latent representation $\bm{h_{test_i}}$ produced by the model's last hidden layer, (2) an approximation of this latent representation $\bm{\tilde{h}_{test_i}}$  can be defined in terms of a user-selected corpus of examples $C$, and (3) the residual $\bm{r_{test_i}} = ||\bm{h_{test_i}} - \bm{\tilde{h}_{test_i}}||_2$ can identify cases where the input $\bm{d_{test_i}}$ differs from $C$.
 
 Combining these insights, we can conclude that by selecting a corpus $C \subset \bm{D_{train}}$, a function of the following form satisfies the requirements of Equation \ref{general_confidence_form}, and could therefore provide an insightful global confidence measure:
 \begin{equation}\label{simplex_confidence_form}
@@ -364,7 +364,7 @@ MNIST experiment results showing behaviour as OOD proportion increases:
 
 \subsection{Cancer classification experiment results}
 \label{sec:cancer results}
-The results for a similar experiment on the tissue image data set shows largely consistent results, see Figure \ref{fig:cancer_results_plots}. This is encouraging, as it suggests that the conclusions drawn about Simplex-based confidence measures generalise to real-world data sets, and may therefore be useful to aid practitioners in understanding and applying models.
+The results for a similar experiment on the lung and colon tissue image data set show largely consistent results, see Figure \ref{fig:cancer_results_plots}. This is encouraging, as it suggests that the conclusions drawn about Simplex-based confidence measures generalise to real-world data sets, and may therefore be useful to aid practitioners in understanding and applying models.
 
 The only notable difference is the behaviour of the direction-specific latent space norm in Figure \ref{res:cancer relative h norm directionwise}. This may be due to the different dimensionality of the latent space of the model used for this experiment. For each class in the data, this measure isolates the dimension with the smallest variance in the validation data as the noise axis. This approach worked for the MNIST model with a 2D latent space. For higher dimensions, this may not be as appropriate if the IDD points lie in a plane that is not aligned with the latent space axes. An alternative methodology may be more robust in higher dimensions, where the covariance matrix of each class in the validation set is used to identify one or more axes to isolate. This is an area of further research.
 
@@ -443,7 +443,7 @@ The approach of using latent space representations and approximations as a measu
   \centering
   % \fbox{\rule[-.5cm]{0cm}{4cm} \rule[-.5cm]{4cm}{0cm}}
   \includegraphics[scale=0.07]{images/explainability_feedback_loop.jpg}
-  \caption{Using explainability methods to continuously improve models and data. The solid black arrows show the flow of data in current paradigms, where a model generates outputs from data with a post-hoc explainer. The dashed lines show how global explainability measures can facilitate a feedback loop where models and data can be improved based on the explainer.}
+  \caption{Using explainability methods to continuously improve models and data. The solid black arrows show the flow of data in current paradigms, where a model generates outputs from data with a post-hoc explainer. The dashed arrows show how global explainability measures can facilitate a feedback loop where models and data can be improved based on the explainer.}
   \label{explainability_loop}
 \end{figure}
 
@@ -462,7 +462,7 @@ The experiments in this paper used image data, owing to the availability of publ
 \paragraph{Transfer learning} \label{sec:transfer learning}
 Transfer learning is an increasingly important topic with the proliferation of pre-trained foundational models.
 The application of such models could provide powerful predictions on small data sets, provided the user can evaluate the confidence of the model. This could allow for more powerful individualised models, where a foundational model can be trained on the health records of a particular patient or group of patients.
-A method of measuring the transferability of a model across domains is an open question \cite{pan_survey_2010} \cite{zhuang_comprehensive_2021}. The intuitive requirements for such a measure are that it be a model-specific measure between  a source data set $D_{source}$ and target data set $D_{target}$. This therefore bears a close resemblance to \ref{general_confidence_form}.
+A method of measuring the transferability of a model across domains is an open question \cite{pan_survey_2010} \cite{zhuang_comprehensive_2021}. The intuitive requirements for such a measure are that it be a model-specific measure between  a source data set $D_{source}$ and target data set $D_{target}$. This therefore bears a close resemblance to Equation \ref{general_confidence_form}.
 The open question of identifying and explaining negative transfer could also be explored by researching behaviour in the latent space.
 A related research area noted by Zhuang et al. is \emph{interpretability} of transfer \cite{zhuang_comprehensive_2021}. The approach explored in this paper is rooted in explainability methods and therefore naturally addresses this concern.
 
