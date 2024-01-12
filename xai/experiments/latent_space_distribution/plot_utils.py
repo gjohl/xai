@@ -37,6 +37,48 @@ def plot_latent_space_2d(latents: torch.Tensor,
     return fig
 
 
+def plot_latent_space_cancer_2d(latents: torch.Tensor,
+                                labels_all: torch.Tensor,
+                                digits: List[int]) -> plt.Figure:
+    fig = plt.figure()
+    COLOR_MAP_CANCER = {
+        0: 'k',
+        1: 'k',
+        2: 'r',
+        3: 'r',
+    }
+    MARKER_MAP_CANCER = {
+        0: 'o',
+        1: 'x',
+        2: 'o',
+        3: 'x',
+    }
+    LABEL_MAP_CANCER = {
+        0: 'lung - benign',
+        1: 'lung - cancer',
+        2: 'colon - benign',
+        3: 'colon - cancer',
+    }
+
+    for digit in digits:
+        # Plot each label one-by-one
+        x_data = latents[labels_all == digit, 0]
+        y_data = latents[labels_all == digit, 1]
+        plt.scatter(x_data,
+                    y_data,
+                    c=COLOR_MAP_CANCER[digit],
+                    marker=MARKER_MAP_CANCER[digit],
+                    alpha=0.5,
+                    label=LABEL_MAP_CANCER[digit])
+
+    plt.xlabel('Latent Dimension 1')
+    plt.ylabel('Latent Dimension 2')
+    # plt.title("Input digits in the model's latent space")
+    plt.legend()
+    fig.tight_layout()
+    return fig
+
+
 def plot_latent_space_3d(latents: torch.Tensor,
                          labels_all: torch.Tensor,
                          digits: List[int]) -> plt.Figure:
