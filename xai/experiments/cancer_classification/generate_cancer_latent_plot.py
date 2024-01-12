@@ -13,7 +13,7 @@ from xai.experiments.latent_space_distribution.plot_utils import (
 )
 
 
-LATENT_FIGURES_DIR = FIGURES_DIR / 'latent_space'
+LATENT_FIGURES_DIR = FIGURES_DIR / 'cancer_latent_space'
 
 
 ##############
@@ -46,8 +46,6 @@ test_lung_data, test_lung_labels = next(iter(test_lung_data_loader))
 test_colon_data, test_colon_labels = next(iter(test_colon_data_loader))
 test_data = torch.cat([test_lung_data, test_colon_data])
 test_labels = torch.cat([test_lung_labels, test_colon_labels + 2])
-# source_data, source_labels = next(iter(training_data_loader))
-
 
 x = source_data[0]
 model.probabilities(x)
@@ -56,25 +54,24 @@ model.probabilities(x)
 #########################################
 # Plot different digits in latent space #
 #########################################
-digits = (0, 1,)
-
 n = 20
-latent_plot_fname = "latent_space_scatter_3d.png"
-
-# test_data_digits, labels_digits = get_data_and_labels_for_digits(test_data, labels, digits, n)
 latents = model.latent_representation(test_data).detach()
+
+digits = (0, 1,)
+latent_plot_fname = "latent_space_cancer_2d_lung.png"
 plot_latent_space_cancer_2d(latents[:, [0, 1]], test_labels, digits)
+plt.savefig(LATENT_FIGURES_DIR / latent_plot_fname, format='png')
 plot_latent_space_cancer_2d(latents[:, [0, 2]], test_labels, digits)
 plot_latent_space_cancer_2d(latents[:, [1, 2]], test_labels, digits)
+# plot_latent_space_3d(latents, test_labels, digits)
 
 digits = (0, 1, 2, 3)
+latent_plot_all_fname = "latent_space_cancer_2d_all.png"
 plot_latent_space_cancer_2d(latents[:, [0, 1]], test_labels, digits)
-plot_latent_space_cancer_2d(latents[:, [0, 2]], test_labels, digits)
-plot_latent_space_cancer_2d(latents[:, [1, 2]], test_labels, digits)
-
-
-plot_latent_space_3d(latents, source_labels, digits)
-plt.savefig(LATENT_FIGURES_DIR / latent_plot_fname, format='png')
+plt.savefig(LATENT_FIGURES_DIR / latent_plot_all_fname, format='png')
+# plot_latent_space_cancer_2d(latents[:, [0, 2]], test_labels, digits)
+# plot_latent_space_cancer_2d(latents[:, [1, 2]], test_labels, digits)
+# plot_latent_space_3d(latents, source_labels, digits)
 
 
 #######################
